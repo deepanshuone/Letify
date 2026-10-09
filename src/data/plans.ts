@@ -22,10 +22,11 @@ export const PLANS: Plan[] = [
     level: 'Beginner',
     blurb: 'Every Easy problem, ordered so each one teaches a tool the next one uses. Start here if arrays and loops are all you know.',
     sections: [
-      { title: 'Arrays and hash maps', note: 'Remember what you have seen instead of searching for it again.', ids: ['contains-duplicate', 'valid-anagram', 'two-sum', 'majority-element', 'plus-one'] },
-      { title: 'Pointers and strings', note: 'Walk an array from both ends, or with two indexes at different speeds.', ids: ['valid-palindrome', 'is-subsequence', 'best-time-to-buy-and-sell-stock'] },
-      { title: 'Bits and math', note: 'A few tricks that turn a loop into a one-liner.', ids: ['single-number', 'missing-number', 'integer-square-root'] },
-      { title: 'Stack, search and your first DP', note: 'Three patterns you will meet again in every later plan.', ids: ['valid-parentheses', 'binary-search', 'climbing-stairs', 'min-cost-climbing-stairs', 'pascals-triangle'] },
+      { title: 'Arrays and hash maps', note: 'Remember what you have seen instead of searching for it again.', ids: ['contains-duplicate', 'valid-anagram', 'two-sum', 'majority-element', 'plus-one', 'find-the-town-judge'] },
+      { title: 'Pointers and strings', note: 'Walk an array from both ends, or with two indexes at different speeds.', ids: ['valid-palindrome', 'is-subsequence', 'best-time-to-buy-and-sell-stock', 'move-zeroes', 'remove-duplicates-from-sorted-array'] },
+      { title: 'Strings', note: 'Count characters, compare neighbours, and fold a string into numbers.', ids: ['first-unique-character', 'isomorphic-strings', 'run-length-compressed-length', 'longest-palindrome-by-rearranging'] },
+      { title: 'Bits and math', note: 'A few tricks that turn a loop into a one-liner.', ids: ['single-number', 'missing-number', 'integer-square-root', 'number-of-1-bits', 'happy-number'] },
+      { title: 'Stack, search and your first DP', note: 'Three patterns you will meet again in every later plan.', ids: ['valid-parentheses', 'binary-search', 'search-insert-position', 'climbing-stairs', 'min-cost-climbing-stairs', 'pascals-triangle', 'unique-paths', 'last-stone-weight'] },
     ],
   },
   {
@@ -80,14 +81,40 @@ export const PLANS: Plan[] = [
     ],
   },
   {
+    id: 'strings-heaps-greedy',
+    title: 'Strings, Heaps and Greedy',
+    level: 'Intermediate',
+    blurb: 'Palindromes and anagrams, priority queues, and greedy choices you can prove. A good second plan after Interview Core.',
+    sections: [
+      { title: 'Strings', note: 'Expand around a centre, slide a window, or scan once with counts.', ids: ['longest-palindromic-substring-length', 'count-palindromic-substrings', 'count-anagram-windows', 'minimum-deletions-a-before-b'] },
+      { title: 'Heaps', note: 'Keep only the best few items and always take the smallest or largest.', ids: ['k-closest-points-to-origin', 'task-scheduler'] },
+      { title: 'Greedy', note: 'Make the locally best choice and be able to say why it is safe.', ids: ['gas-station', 'jump-game-ii'] },
+      { title: 'Matrix tricks', note: 'Walk and rewrite a grid without extra space.', ids: ['spiral-matrix', 'set-matrix-zeroes'] },
+    ],
+  },
+  {
+    id: 'patterns-round-two',
+    title: 'Patterns, Round Two',
+    level: 'Intermediate',
+    blurb: 'More practice with the patterns you already know: search on the answer, intervals, union find, and one more DP.',
+    sections: [
+      { title: 'Binary search and windows', note: 'Search the range of answers, or grow a window while a count stays small.', ids: ['find-first-and-last-position', 'capacity-to-ship-packages', 'max-consecutive-ones-iii'] },
+      { title: 'Intervals and stacks', note: 'Sort first, then sweep once.', ids: ['non-overlapping-intervals', 'minimum-number-of-arrows', 'car-fleet'] },
+      { title: 'Union find and graphs', note: 'Merge groups instead of walking the graph again.', ids: ['number-of-provinces', 'redundant-connection', 'shortest-path-in-binary-matrix'] },
+      { title: 'DP and backtracking', note: 'Define the state, then count or search.', ids: ['partition-equal-subset-sum', 'best-time-to-buy-and-sell-stock-with-cooldown', 'combination-sum-ii'] },
+    ],
+  },
+  {
     id: 'hard-mode',
     title: 'Hard Mode',
     level: 'Advanced',
-    blurb: 'All 13 Hard problems. Brute force will not finish here, so you have to find the structure.',
+    blurb: 'All 22 Hard problems. Brute force will not finish here, so you have to find the structure.',
     sections: [
       { title: 'Arrays and search', note: 'Use the shape of the data to skip most of the work.', ids: ['median-of-two-sorted-arrays', 'first-missing-positive', 'trapping-rain-water'] },
       { title: 'Windows and stacks', note: 'Keep only the candidates that can still win.', ids: ['largest-rectangle-in-histogram', 'sliding-window-maximum', 'minimum-window-substring', 'longest-valid-parentheses'] },
-      { title: 'DP and search', note: 'State design is the whole problem.', ids: ['edit-distance', 'burst-balloons', 'regular-expression-matching', 'n-queens-ii', 'partition-to-k-equal-sum-subsets', 'longest-increasing-path-in-a-matrix'] },
+      { title: 'DP and search', note: 'State design is the whole problem.', ids: ['edit-distance', 'burst-balloons', 'regular-expression-matching', 'n-queens-ii', 'partition-to-k-equal-sum-subsets', 'longest-increasing-path-in-a-matrix', 'palindrome-partitioning-ii', 'distinct-subsequences-count'] },
+      { title: 'Greedy, heaps and graphs', note: 'Pick the right data structure and the loop becomes short.', ids: ['candy', 'ipo', 'number-of-islands-ii', 'critical-connections-in-a-network'] },
+      { title: 'Strings and searching the answer', note: 'Binary search on the result, and a deque that keeps the best start.', ids: ['shortest-palindrome-length', 'split-array-largest-sum', 'shortest-subarray-with-sum-at-least-k'] },
     ],
   },
 ];

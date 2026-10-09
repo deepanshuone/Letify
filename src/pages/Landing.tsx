@@ -1,30 +1,17 @@
 import { useEffect, useMemo } from 'react';
 import { BRAND, CLOUD_ENABLED } from '../config';
 import { Heatmap } from '../components/Heatmap';
-import { HeroDemo } from '../components/landing/HeroDemo';
+import { TodayPanel } from '../components/landing/TodayPanel';
 import { Link, Pill, Rich, SectionLink } from '../components/common';
 import { BY_ID, PROBLEMS, TOPICS } from '../data';
-import { PLANS } from '../data/plans';
+import { PLANS, planIds } from '../data/plans';
 import { navigate, takePendingSection } from '../router';
 import { useFilters } from '../state/filters';
 import { useUserData } from '../state/userdata';
-import { CONTEST_MINUTES, POINTS, clock, mulberry32, pickProblems } from '../user/contest';
-import { dayKey } from '../user/stats';
+import { CONTEST_MINUTES, POINTS, clock, pickProblems } from '../user/contest';
+import { activityByDay, dayKey, planProgress, streaks } from '../user/stats';
 
-const DAY = 86_400_000;
 
-/** Made-up activity for the example heatmap, always the same so the page does not flicker between visits. */
-function sampleActivity(now: number): Record<string, number> {
-  const rnd = mulberry32(11);
-  const out: Record<string, number> = {};
-  for (let d = 0; d < 230; d++) {
-    const busy = d < 40 ? 0.8 : 0.5;
-    if (rnd() < busy) out[dayKey(now - d * DAY)] = 1 + Math.floor(rnd() * 6);
-  }
-  return out;
-}
-
-const SAMPLE_PROGRESS = [100, 46, 17, 0];
 const ORDER = { Easy: 0, Medium: 1, Hard: 2 } as const;
 
 export function Landing() {
@@ -32,7 +19,9 @@ export function Landing() {
   const { data } = useUserData();
   const total = PROBLEMS.length;
   const now = useMemo(() => Date.now(), []);
-  const activity = useMemo(() => sampleActivity(now), [now]);
+  const activity = useMemo(() => activityByDay(data), [data]);
+  const st = streaks(activity, dayKey(now));
+  const started = st.activeDays > 0;
   const contestIds = useMemo(() => pickProblems(PROBLEMS, {}, 2024), []);
   const hint = BY_ID.get('two-sum')?.hints[0] ?? '';
   const byTopic = useMemo(
@@ -69,7 +58,7 @@ export function Landing() {
             </div>
             <p className="lp-note">No sign-up needed. Python and JavaScript run right in your browser.</p>
           </div>
-          <HeroDemo />
+          <TodayPanel />
         </div>
       </section>
 
@@ -110,37 +99,73 @@ export function Landing() {
 
         <section className="lp-sec" id="features" aria-labelledby="h-features">
           <h2 id="h-features">What you get with every problem</h2>
-          <p className="sec-lede">Nothing here is behind a paywall. The examples below use sample data.</p>
+          <p className="sec-lede">Nothing here is behind a paywall. Your own progress shows up here as soon as you start.</p>
           <div className="lp-bento">
             <article className="lp-tile t3">
               <h3>Follow a study plan</h3>
               <p>{PLANS.length} ordered paths, from Foundations to Hard Mode. Each step says what it teaches.</p>
               <ul className="lp-plans">
-                {PLANS.slice(0, 4).map((pl, k) => (
-                  <li key={pl.id}>
-                    <span>{pl.title}</span>
-                    <span className={`level ${pl.level}`}>{pl.level}</span>
-                    <span className="bar" aria-hidden="true">
-                      <i style={{ width: `${SAMPLE_PROGRESS[k]}%` }} />
-                    </span>
-                    <small className="tnum">{SAMPLE_PROGRESS[k]}%</small>
-                  </li>
-                ))}
+                {PLANS.slice(0, 4).map((pl) => {
+                  const pr = planProgress(pl, data);
+                  const pct = Math.round((100 * pr.solved) / pr.total);
+                  return (
+                    <li key={pl.id}>
+                      <span>{pl.title}</span>
+                      <span className={`level ${pl.level}`}>{pl.level}</span>
+                      <span className="bar" aria-hidden="true">
+                        <i style={{ width: `${pct}%` }} />
+                      </span>
+                      <small className="tnum">{pr.solved > 0 ? `${pct}%` : `${planIds(pl).length} problems`}</small>
+                    </li>
+                  );
+                })}
               </ul>
             </article>
 
             <article className="lp-tile t3">
               <h3>Keep a daily streak</h3>
-              <p>Your profile shows streaks, XP levels, badges and a heatmap of every day you practiced.</p>
-              <div className="lp-heat">
-                <Heatmap activity={activity} today={dayKey(now)} bare />
-              </div>
+              <p>Your profile tracks streaks, XP levels, badges and a heatmap of every day you practiced.</p>
+              {started ? (
+                <>
+                  <div className="lp-stats tnum">
+                    <div>
+                      <b>{st.current}</b>
+                      <small>day streak</small>
+                    </div>
+                    <div>
+                      <b>{st.longest}</b>
+                      <small>longest</small>
+                    </div>
+                    <div>
+                      <b>{st.activeDays}</b>
+                      <small>active days</small>
+                    </div>
+                  </div>
+                  <div className="lp-heat">
+                    <Heatmap activity={activity} today={dayKey(now)} bare />
+                  </div>
+                </>
+              ) : (
+                <div className="lp-empty-heat">
+                  <ol className="lp-week-days" aria-hidden="true">
+                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((l, i) => (
+                      <li key={i}>
+                        <span />
+                        <small>{l}</small>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="muted" style={{ margin: 0 }}>
+                    Nothing here yet. Solve one problem and your streak and heatmap start from today.
+                  </p>
+                </div>
+              )}
             </article>
 
             <article className="lp-tile t2">
               <h3>Race the clock</h3>
               <p>
-                A virtual contest: {CONTEST_MINUTES} minutes, four problems, a penalty for each wrong try.
+                A virtual contest: {CONTEST_MINUTES} minutes, four problems, a penalty for each wrong try. Here is an example round.
               </p>
               <div className="lp-clock tnum" aria-hidden="true">
                 {clock(CONTEST_MINUTES * 60_000)}

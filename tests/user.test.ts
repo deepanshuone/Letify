@@ -24,7 +24,7 @@ describe('study plans', () => {
     const d = data({ solved: { 'contains-duplicate': { lang: 'python', at: 1 }, 'two-sum': { lang: 'python', at: 2 } } });
     const pr = planProgress(PLANS[0]!, d);
     expect(pr.solved).toBe(2);
-    expect(pr.sections[0]).toMatchObject({ solved: 2, total: 5 });
+    expect(pr.sections[0]).toMatchObject({ solved: 2, total: 6 });
   });
 });
 
