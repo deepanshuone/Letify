@@ -1,0 +1,1273 @@
+<title>Abhyas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='1' y='17' width='7' height='8' rx='1.5' fill='%23A7B0D6'/%3E%3Crect x='9.5' y='10' width='7' height='15' rx='1.5' fill='%236D7BC4'/%3E%3Crect x='18' y='2' width='7' height='23' rx='1.5' fill='%232F44D8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@600&display=swap">
+<style>
+/* Layout: slim top bar, then either a three-step "staircase" of stages above a problem list, or a two-pane workspace (statement | editor + results). */
+:root{
+  --bg:#EEF1F8; --surface:#FFFFFF; --surface-2:#E7EBF5; --ink:#141B34; --ink-2:#4B5575; --ink-3:#6E7A9C; --line:#D5DBEA;
+  --accent:#2F44D8; --on-accent:#FFFFFF; --accent-soft:#E2E6FC;
+  --good:#0E7C57; --good-bg:#DDF3EA; --warn:#9A5A08; --warn-bg:#FAEBD0; --bad:#B3243F; --bad-bg:#FBE0E5;
+  --code-bg:#F5F7FC; --code-ink:#1B2340; --sel:#C9D1FA;
+  --tk-kw:#5B3FD9; --tk-str:#0E7C57; --tk-com:#7480A0; --tk-num:#B4540A; --tk-fn:#1F5FBF; --tk-ty:#A12E7A;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bar-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1020; --surface:#141A30; --surface-2:#1C2444; --ink:#E6E9F6; --ink-2:#A3ACCD; --ink-3:#7F89AE; --line:#283056;
+    --accent:#8A9BFF; --on-accent:#0C1020; --accent-soft:#232C5C;
+    --good:#55D6A6; --good-bg:#12372B; --warn:#F2B661; --warn-bg:#3A2A10; --bad:#FF8AA0; --bad-bg:#40182A;
+    --code-bg:#10162B; --code-ink:#DDE2F7; --sel:#34408A;
+    --tk-kw:#B49CFF; --tk-str:#6FE0B3; --tk-com:#7F89AE; --tk-num:#F2B661; --tk-fn:#7FB2FF; --tk-ty:#FF9BCB; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1020; --surface:#141A30; --surface-2:#1C2444; --ink:#E6E9F6; --ink-2:#A3ACCD; --ink-3:#7F89AE; --line:#283056;
+  --accent:#8A9BFF; --on-accent:#0C1020; --accent-soft:#232C5C;
+  --good:#55D6A6; --good-bg:#12372B; --warn:#F2B661; --warn-bg:#3A2A10; --bad:#FF8AA0; --bad-bg:#40182A;
+  --code-bg:#10162B; --code-ink:#DDE2F7; --sel:#34408A;
+    --tk-kw:#B49CFF; --tk-str:#6FE0B3; --tk-com:#7F89AE; --tk-num:#F2B661; --tk-fn:#7FB2FF; --tk-ty:#FF9BCB; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:0;padding-block:0;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.12;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:var(--mono)}
+code{font-size:.88em;background:var(--surface-2);padding:.08em .38em;border-radius:4px}
+.wrap{max-width:1320px;margin-inline:auto;padding-inline:16px}
+.muted{color:var(--ink-2)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;min-height:var(--bar-h);flex-wrap:wrap;padding-block:6px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+.brand svg{width:26px;height:26px;display:block}
+.grow{flex:1 1 auto}
+.count{font-size:.86rem;color:var(--ink-2)}
+.count b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;width:36px;height:36px;display:grid;place-items:center}
+.icon-btn:hover{background:var(--surface-2)}
+.icon-btn svg{width:18px;height:18px}
+
+/* buttons */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;font-weight:600;font-size:.9rem;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.sm{padding:5px 10px;font-size:.84rem}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2);color:var(--ink)}
+
+/* pills */
+.pill{display:inline-block;font-size:.76rem;font-weight:600;padding:2px 10px;border-radius:999px;letter-spacing:.02em}
+.pill.Easy{color:var(--good);background:var(--good-bg)}
+.pill.Medium{color:var(--warn);background:var(--warn-bg)}
+.pill.Hard{color:var(--bad);background:var(--bad-bg)}
+.chip{display:inline-block;font-size:.76rem;color:var(--ink-2);border:1px solid var(--line);padding:1px 9px;border-radius:999px}
+.chip.big{font-family:var(--mono);font-size:.78rem;background:var(--surface-2);border-color:transparent;color:var(--ink)}
+
+/* home */
+.intro{padding-block:34px 10px;max-width:760px}
+.intro h1{font-size:clamp(2rem,5.2vw,3.5rem);font-weight:800}
+.intro .lede{font-size:1.08rem;color:var(--ink-2);margin:14px 0 18px;max-width:60ch}
+.intro-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+.included{display:flex;flex-wrap:wrap;gap:6px 18px;margin:20px 0 0;padding:0;list-style:none;font-size:.88rem;color:var(--ink-2)}
+.included li::before{content:"";display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:2px;margin-right:8px;transform:translateY(-1px)}
+.stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:end;margin-block:26px 30px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 16px 14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0}
+.stage:nth-child(1){margin-bottom:0}
+.stage:nth-child(2){padding-bottom:34px}
+.stage:nth-child(3){padding-bottom:58px}
+.stage:hover{border-color:var(--accent)}
+.stage.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.stage h3{font-size:1.15rem}
+.stage .sub{font-size:.88rem;color:var(--ink-2)}
+.stage .meta{display:flex;justify-content:space-between;font-size:.82rem;color:var(--ink-2)}
+.bar{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.filters input[type=search],.filters select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-height:36px}
+.filters input[type=search]{flex:1 1 220px;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:7px 12px;font-size:.88rem;font-weight:500;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"],.seg button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.table{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.row{display:grid;grid-template-columns:34px minmax(0,1fr) 150px 92px;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid var(--line);text-decoration:none}
+.row:first-child{border-top:0}
+a.row:hover{background:var(--surface-2)}
+.row.head{font-size:.76rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);padding-block:9px;background:var(--surface-2)}
+.row .t{min-width:0}
+.row .t b{font-weight:600}
+.row .t small{display:block;color:var(--ink-3);font-size:.8rem}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.dot.done{background:var(--good);border-color:var(--good)}
+.dot.done svg{width:12px;height:12px;stroke:#fff}
+.empty{padding:28px 16px;text-align:center;color:var(--ink-2)}
+footer.foot{padding-block:28px 40px;color:var(--ink-3);font-size:.84rem}
+
+/* problem page */
+.pv-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding-block:14px 12px}
+.pv-head h1{font-size:clamp(1.3rem,2.6vw,1.8rem);font-weight:800}
+.back{font-size:.88rem;color:var(--ink-2);text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.back:hover{color:var(--ink)}
+.pv-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pv-nav{margin-left:auto;display:flex;gap:8px}
+.solved-badge{font-size:.78rem;font-weight:600;color:var(--good);background:var(--good-bg);padding:2px 10px;border-radius:999px}
+.mobile-seg{display:none;margin-bottom:10px}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:14px;height:calc(100vh - var(--bar-h) - 96px);min-height:600px;padding-bottom:16px}
+.pane{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 8px;background:var(--surface)}
+.tabs button{border:0;background:transparent;padding:11px 12px;font-weight:600;font-size:.9rem;color:var(--ink-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.scroll{overflow:auto;padding:16px 18px 22px;min-height:0;flex:1 1 auto}
+.scroll h2{font-size:1.02rem;margin:20px 0 8px}
+.scroll ul{margin:0 0 .8em;padding-left:1.2em}
+.scroll li{margin-bottom:.25em}
+.ex{margin:12px 0}
+.ex .ex-h{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px}
+pre.block{background:var(--code-bg);color:var(--code-ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0;overflow:auto;font-size:.84rem;line-height:1.55;white-space:pre}
+pre.block .k{color:var(--ink-3)}
+.hint{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:var(--surface)}
+.hint b{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);display:block;margin-bottom:2px}
+.cx{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.note{font-size:.88rem;color:var(--ink-2);background:var(--surface-2);border-radius:8px;padding:9px 12px}
+
+/* editor pane */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--line)}
+.toolbar select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-height:34px;font-weight:600}
+.settings{padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface-2);display:grid;gap:8px;font-size:.88rem}
+.settings label{display:grid;gap:3px;font-weight:600;font-size:.8rem;color:var(--ink-2)}
+.settings input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:.84rem;min-width:0}
+.settings .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.editor{display:flex;flex:1 1 220px;min-height:200px;background:var(--code-bg);--fs:var(--ed-fs,13.5px)}
+.gutter{margin:0;padding:12px 8px 12px 10px;text-align:right;color:var(--ink-3);font-family:var(--mono);font-size:var(--fs);line-height:1.6;overflow:hidden;user-select:none;min-width:42px;border-right:1px solid var(--line);white-space:pre}
+.stack{position:relative;flex:1 1 auto;min-width:0}
+.stack pre.hl,.stack textarea{position:absolute;inset:0;margin:0;border:0;padding:12px 14px;font-family:var(--mono);font-size:var(--fs);line-height:1.6;white-space:pre;tab-size:4;letter-spacing:0;font-variant-ligatures:none}
+.stack pre.hl{overflow:hidden;color:var(--code-ink);pointer-events:none}
+.stack textarea{width:100%;height:100%;outline:0;resize:none;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--code-ink);overflow:auto}
+.stack textarea::selection{background:var(--sel);-webkit-text-fill-color:transparent}
+.tk-kw{color:var(--tk-kw);font-weight:500}.tk-str{color:var(--tk-str)}.tk-com{color:var(--tk-com);font-style:italic}.tk-num{color:var(--tk-num)}.tk-fn{color:var(--tk-fn)}.tk-ty{color:var(--tk-ty)}
+.editor:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+.ed-status{display:flex;gap:12px;align-items:center;padding:4px 12px;border-block:1px solid var(--line);font-family:var(--mono);font-size:.74rem;color:var(--ink-3);background:var(--surface)}
+.results{flex:0 1 44%;min-height:130px;overflow:auto;padding:12px 14px 16px}
+.res-empty{color:var(--ink-2);font-size:.9rem}
+.res-empty kbd{font-size:.78rem;background:var(--surface-2);border:1px solid var(--line);padding:0 5px;border-radius:4px}
+.verdict{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:8px}
+.verdict h3{font-size:1.25rem;font-weight:800}
+.verdict.ac h3{color:var(--good)}
+.verdict.bad h3{color:var(--bad)}
+.verdict.warn h3{color:var(--warn)}
+.cases{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.cases button{min-width:34px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:.82rem;padding:0 8px}
+.cases button.pass{color:var(--good);background:var(--good-bg);border-color:transparent}
+.cases button.fail{color:var(--bad);background:var(--bad-bg);border-color:transparent}
+.cases button.skip{color:var(--ink-3)}
+.cases button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.kv{display:grid;gap:6px}
+.kv .lab{font-size:.74rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-weight:600;font-size:.9rem;z-index:50;max-width:calc(100vw - 32px)}
+
+
+/* nav */
+.nav{display:flex;gap:2px;margin-left:10px}
+.nav a{padding:6px 11px;border-radius:7px;text-decoration:none;font-weight:500;font-size:.92rem;color:var(--ink-2)}
+.nav a:hover{background:var(--surface-2);color:var(--ink)}
+.btn.lg{padding:11px 20px;font-size:1rem;border-radius:10px}
+
+/* landing */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:center;padding-block:60px 44px}
+.eyebrow{display:inline-block;font-size:.82rem;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:999px;margin-bottom:18px}
+.hero h1{font-size:clamp(2.3rem,5.4vw,4rem);font-weight:800;line-height:1.04;letter-spacing:-.025em}
+.hero .lede{font-size:1.1rem;color:var(--ink-2);margin:18px 0 26px;max-width:54ch}
+.hero-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.hero-note{font-size:.86rem;color:var(--ink-3);margin:14px 0 0}
+.hindi{font-family:"Noto Sans Devanagari",var(--body);font-weight:600}
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 22px 44px -28px rgba(20,27,52,.45);min-width:0}
+.demo-bar{display:flex;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.8rem;color:var(--ink-2)}
+.demo-bar .pill{margin-left:auto}
+.demo pre.code{margin:0;padding:14px 16px;background:var(--code-bg);color:var(--code-ink);font-size:.84rem;line-height:1.65;overflow:auto;white-space:pre}
+.demo-res{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;padding:11px 14px;border-top:1px solid var(--line);font-size:.86rem}
+.demo-res b{color:var(--good)}
+.statline{display:flex;flex-wrap:wrap;gap:14px 44px;padding:22px 0;border-block:1px solid var(--line)}
+.statline b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;line-height:1.1}
+.statline span{font-size:.84rem;color:var(--ink-2)}
+.sec{padding-block:72px 0;scroll-margin-top:72px}
+.sec h2{font-size:clamp(1.6rem,3.2vw,2.3rem);font-weight:800;max-width:22ch}
+.sec .sec-lede{color:var(--ink-2);max-width:60ch;margin:12px 0 30px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;border-top:2px solid var(--ink);padding-top:14px}
+.steps li::before{content:"Step " counter(s);display:block;font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:6px}
+.steps h3{font-size:1.15rem;margin-bottom:6px}
+.steps p,.feat p{margin:0;color:var(--ink-2);font-size:.95rem}
+.feats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 56px}
+.feat{padding:18px 0 20px;border-top:1px solid var(--line)}
+.feat h3{font-size:1.05rem;margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+a.stage{text-decoration:none;color:inherit}
+.faq{max-width:820px}
+.faq details{border-top:1px solid var(--line);padding:15px 0}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;font-weight:600;font-size:1.02rem;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--ink-3);font-size:1.3rem;line-height:1}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{margin:10px 0 0;color:var(--ink-2);max-width:70ch}
+.cta-band{margin-top:72px;padding:36px 32px;border-radius:14px;background:var(--ink);color:var(--bg);display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between}
+.cta-band h2{font-size:clamp(1.4rem,3vw,2rem);max-width:20ch;color:var(--bg)}
+.cta-band .btn.primary{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+.site-foot{margin-top:56px;border-top:1px solid var(--line);padding-block:28px 40px;display:flex;flex-wrap:wrap;gap:18px 40px;justify-content:space-between;color:var(--ink-2);font-size:.88rem}
+.site-foot a{color:var(--ink-2)}
+.site-foot nav{display:flex;gap:18px;flex-wrap:wrap}
+.intro.compact h1{font-size:clamp(1.9rem,4vw,2.7rem)}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;padding-block:36px 28px}
+  .steps,.feats{grid-template-columns:1fr}
+  .feats{gap:0}
+  .stages{grid-template-columns:1fr;align-items:stretch}
+  .stage:nth-child(n){padding-bottom:14px}
+  .mobile-seg{display:inline-flex}
+  .workspace{display:block;height:auto;min-height:0}
+  .workspace .pane{height:calc(100vh - var(--bar-h) - 150px);min-height:520px}
+  .workspace[data-pane="problem"] .pane.code{display:none}
+  .workspace[data-pane="code"] .pane.problem{display:none}
+  .pv-nav{margin-left:0}
+}
+@media (max-width:640px){
+  .row{grid-template-columns:30px minmax(0,1fr) auto;padding-inline:10px}
+  .row .topic{display:none}
+  .row.head .topic{display:none}
+  .count{display:none}
+  .nav a{padding:6px 8px}
+  .cta-band{padding:26px 20px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="top">
+  <div class="wrap">
+    <a class="brand" href="#" data-go="" aria-label="Abhyas home">
+      <svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="17" width="7" height="8" rx="1.5" fill="currentColor" opacity=".35"/><rect x="9.5" y="10" width="7" height="15" rx="1.5" fill="currentColor" opacity=".65"/><rect x="18" y="2" width="7" height="23" rx="1.5" fill="var(--accent)"/></svg>
+      <span>Abhyas</span>
+    </a>
+    <nav class="nav" aria-label="Main"><a href="#problems" data-go="problems">Problems</a><a href="#stages" data-scroll="stages">Roadmap</a><a href="#faq" data-scroll="faq">FAQ</a></nav>
+    <span class="grow"></span>
+    <span class="count tnum" id="count"></span>
+    <button class="icon-btn" id="themeBtn" aria-label="Switch between light and dark theme" title="Switch theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</div>
+<main class="wrap" id="view"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+'use strict';
+const PROBLEMS = __PROBLEMS_JSON__;
+
+/*PURE-START*/
+const LANGS = {
+  python:{label:'Python'},
+  javascript:{label:'JavaScript'},
+  cpp:{label:'C++'},
+  java:{label:'Java'}
+};
+const JUDGE0_IDS = {cpp:54, java:62};
+const TYPE = {
+  py:{'int':'int','bool':'bool','string':'str','int[]':'list[int]','int[][]':'list[list[int]]'},
+  js:{'int':'number','bool':'boolean','string':'string','int[]':'number[]','int[][]':'number[][]'},
+  cpp:{'int':'int','bool':'bool','string':'string','int[]':'vector<int>','int[][]':'vector<vector<int>>'},
+  java:{'int':'int','bool':'boolean','string':'String','int[]':'int[]','int[][]':'int[][]'}
+};
+const MARK = '@@R@@';
+
+function starter(p, lang){
+  const ps = p.params;
+  if(lang==='python'){
+    const sig = ps.map(x=>x[0]+': '+TYPE.py[x[1]]).join(', ');
+    return 'def '+p.fn+'('+sig+') -> '+TYPE.py[p.ret]+':\n    # Write your solution here\n    pass\n';
+  }
+  if(lang==='javascript'){
+    const doc = ps.map(x=>' * @param {'+TYPE.js[x[1]]+'} '+x[0]).join('\n');
+    return '/**\n'+doc+'\n * @return {'+TYPE.js[p.ret]+'}\n */\nfunction '+p.fn+'('+ps.map(x=>x[0]).join(', ')+') {\n  // Write your solution here\n}\n';
+  }
+  if(lang==='cpp'){
+    const sig = ps.map(x=>TYPE.cpp[x[1]]+(x[1].endsWith(']')?'& ':' ')+x[0]).join(', ');
+    return 'class Solution {\npublic:\n    '+TYPE.cpp[p.ret]+' '+p.fn+'('+sig+') {\n        // Write your solution here\n    }\n};\n';
+  }
+  const sig = ps.map(x=>TYPE.java[x[1]]+' '+x[0]).join(', ');
+  return 'class Solution {\n    public '+TYPE.java[p.ret]+' '+p.fn+'('+sig+') {\n        // Write your solution here\n    }\n}\n';
+}
+
+/* stdin format used for C++ / Java: first line T, then each argument of each test.
+   int: n | bool: 0/1 | string: token ("" for empty) | int[]: len then items | int[][]: rows, then each row as len + items */
+function fmtArg(v, t){
+  if(t==='int') return String(v);
+  if(t==='bool') return v?'1':'0';
+  if(t==='string') return v===''?'""':v;
+  if(t==='int[]') return v.length+' '+v.join(' ');
+  return v.length+'\n'+v.map(function(r){return r.length+' '+r.join(' ');}).join('\n');
+}
+function buildStdin(p, tests){
+  const lines = [String(tests.length)];
+  tests.forEach(function(t){ t.args.forEach(function(a,i){ lines.push(fmtArg(a, p.params[i][1])); }); });
+  return lines.join('\n')+'\n';
+}
+
+const CPP_HELPERS = String.raw`
+static long long rdI(){ long long x; cin >> x; return x; }
+static bool rdB(){ int x; cin >> x; return x != 0; }
+static string rdS(){ string s; cin >> s; if(s == "\"\"") s = ""; return s; }
+static vector<int> rdV(){ int n; cin >> n; vector<int> v(n); for(int i = 0; i < n; i++) cin >> v[i]; return v; }
+static vector<vector<int>> rdM(){ int r; cin >> r; vector<vector<int>> m(r); for(int i = 0; i < r; i++) m[i] = rdV(); return m; }
+static void pr(int x){ cout << x; }
+static void pr(bool b){ cout << (b ? "true" : "false"); }
+static void pr(const string& s){ cout << '"' << s << '"'; }
+static void pr(const vector<int>& v){ cout << '['; for(size_t i = 0; i < v.size(); i++){ if(i) cout << ','; cout << v[i]; } cout << ']'; }
+static void pr(const vector<vector<int>>& m){ cout << '['; for(size_t i = 0; i < m.size(); i++){ if(i) cout << ','; pr(m[i]); } cout << ']'; }
+`;
+function cppProgram(p, code){
+  const rd = {'int':'(int)rdI()','bool':'rdB()','string':'rdS()','int[]':'rdV()','int[][]':'rdM()'};
+  const decl = p.params.map(function(x,i){return '        '+TYPE.cpp[x[1]]+' p'+i+' = '+rd[x[1]]+';';}).join('\n');
+  const call = p.params.map(function(_,i){return 'p'+i;}).join(', ');
+  return '#include <bits/stdc++.h>\nusing namespace std;\n\n'+code+'\n'+CPP_HELPERS+
+    '\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    cin >> T;\n    while(T--){\n'+decl+'\n'+
+    '        '+TYPE.cpp[p.ret]+' r = Solution().'+p.fn+'('+call+');\n'+
+    '        cout << "\\n'+MARK+'";\n        pr(r);\n        cout << "\\n" << flush;\n    }\n    return 0;\n}\n';
+}
+
+const JAVA_HELPERS = String.raw`
+    static Scanner sc;
+    static int[] rdV(){ int n = sc.nextInt(); int[] a = new int[n]; for(int i = 0; i < n; i++) a[i] = sc.nextInt(); return a; }
+    static int[][] rdM(){ int r = sc.nextInt(); int[][] m = new int[r][]; for(int i = 0; i < r; i++) m[i] = rdV(); return m; }
+    static String rdS(){ String s = sc.next(); return s.equals("\"\"") ? "" : s; }
+    static String js(int x){ return String.valueOf(x); }
+    static String js(boolean b){ return b ? "true" : "false"; }
+    static String js(String s){ return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""; }
+    static String js(int[] a){ StringBuilder sb = new StringBuilder("["); for(int i = 0; i < a.length; i++){ if(i > 0) sb.append(','); sb.append(a[i]); } return sb.append(']').toString(); }
+    static String js(int[][] m){ StringBuilder sb = new StringBuilder("["); for(int i = 0; i < m.length; i++){ if(i > 0) sb.append(','); sb.append(js(m[i])); } return sb.append(']').toString(); }
+`;
+function javaProgram(p, code){
+  const rd = {'int':'sc.nextInt()','bool':'(sc.nextInt() != 0)','string':'rdS()','int[]':'rdV()','int[][]':'rdM()'};
+  const decl = p.params.map(function(x,i){return '            '+TYPE.java[x[1]]+' p'+i+' = '+rd[x[1]]+';';}).join('\n');
+  const call = p.params.map(function(_,i){return 'p'+i;}).join(', ');
+  return 'import java.util.*;\nimport java.io.*;\n\n'+code+'\n\npublic class Main {'+JAVA_HELPERS+
+    '    public static void main(String[] args){\n        sc = new Scanner(new BufferedInputStream(System.in));\n        int T = sc.nextInt();\n        for(int t = 0; t < T; t++){\n'+decl+'\n'+
+    '            '+TYPE.java[p.ret]+' r = new Solution().'+p.fn+'('+call+');\n'+
+    '            System.out.print("\\n'+MARK+'" + js(r) + "\\n");\n            System.out.flush();\n        }\n    }\n}\n';
+}
+
+function lexCmp(a,b){
+  const n = Math.min(a.length,b.length);
+  for(let i=0;i<n;i++){ if(a[i]!==b[i]) return a[i]-b[i]; }
+  return a.length-b.length;
+}
+function canon(v, mode){
+  if(mode==='flat' && Array.isArray(v)) return v.slice().sort(function(a,b){return a-b;});
+  if(mode==='rows' && Array.isArray(v) && v.every(Array.isArray)) return v.map(function(r){return r.slice().sort(function(a,b){return a-b;});}).sort(lexCmp);
+  return v;
+}
+function sameResult(a,b,mode){ return JSON.stringify(canon(a,mode))===JSON.stringify(canon(b,mode)); }
+
+/* eng: {status:'ok'|'compile_error'|'engine_error', message, cases:[{ok,value,error,ms,stdout}], timedOut, fatal, ms, stdout} */
+function makeVerdict(p, tests, eng){
+  const total = tests.length;
+  if(eng.status==='compile_error') return {kind:'ce', message:eng.message, total:total, passed:0};
+  if(eng.status==='engine_error') return {kind:'engine', message:eng.message, total:total, passed:0};
+  let passed = 0, ms = 0;
+  const cases = eng.cases || [];
+  for(let i=0;i<total;i++){
+    const c = cases[i];
+    if(!c){
+      if(eng.timedOut) return {kind:'tle', failIndex:i, passed:passed, total:total, ms:ms, stdout:eng.stdout||''};
+      if(eng.fatal) return {kind:'re', failIndex:i, passed:passed, total:total, ms:ms, message:eng.fatal, stdout:eng.stdout||''};
+      return {kind:'engine', message:'The runner stopped before every test case finished. Try again.', total:total, passed:passed};
+    }
+    ms += c.ms||0;
+    if(!c.ok) return {kind:'re', failIndex:i, passed:passed, total:total, ms:ms, message:c.error, stdout:c.stdout||eng.stdout||''};
+    if(!sameResult(c.value, tests[i].expected, p.cmp)) return {kind:'wa', failIndex:i, passed:passed, total:total, ms:ms, actual:c.value, stdout:c.stdout||eng.stdout||''};
+    passed++;
+  }
+  return {kind:'ac', passed:passed, total:total, ms:eng.ms||ms, stdout:eng.stdout||''};
+}
+
+/* syntax highlighting (tiny tokenizer, enough for the four supported languages) */
+const KW = {
+  python:'False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield',
+  javascript:'async await break case catch class const continue debugger default delete do else export extends finally for function if import in instanceof let new of return super switch this throw try typeof var void while with yield null true false undefined',
+  cpp:'alignas auto break case catch class const constexpr continue default delete do else enum explicit extern false for friend goto if inline namespace new noexcept nullptr operator private protected public return sizeof static struct switch template this throw true try typedef typename union using virtual void volatile while',
+  java:'abstract assert break case catch class continue default do else enum extends final finally for if implements import instanceof interface new null package private protected public return static super switch synchronized this throw throws try true false void volatile while'
+};
+const TY = {
+  python:'int str list dict set tuple bool float len range enumerate sorted min max sum abs zip map filter print reversed any all',
+  javascript:'Array Object Map Set Math Number String Boolean JSON Infinity NaN console parseInt Symbol Promise',
+  cpp:'int long short char bool double float unsigned signed string vector map set unordered_map unordered_set pair deque queue stack priority_queue array size_t min max sort swap cout cin endl',
+  java:'int long short char byte boolean double float String Integer Long List ArrayList Map HashMap Set HashSet Deque ArrayDeque Queue LinkedList Arrays Math Collections Stack Character StringBuilder Object'
+};
+const KWSET = {}, TYSET = {};
+Object.keys(KW).forEach(function(l){ KWSET[l] = new Set(KW[l].split(' ')); TYSET[l] = new Set(TY[l].split(' ')); });
+const NUM = '(\\b0[xX][0-9a-fA-F_]+\\b|\\b\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b)';
+const ID = '([A-Za-z_$][\\w$]*)';
+const STR_BASIC = '"(?:\\\\.|[^"\\\\\\n])*"?|\'(?:\\\\.|[^\'\\\\\\n])*\'?';
+const RE_SRC = {
+  python:'(#[^\\n]*)|("""[\\s\\S]*?(?:"""|$)|\'\'\'[\\s\\S]*?(?:\'\'\'|$)|' + STR_BASIC + ')|' + NUM + '|' + ID,
+  javascript:'(\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?(?:\\*\\/|$))|(`(?:\\\\[\\s\\S]|[^`\\\\])*`?|' + STR_BASIC + ')|' + NUM + '|' + ID,
+  cpp:'(\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?(?:\\*\\/|$)|^[ \\t]*#[^\\n]*)|(' + STR_BASIC + ')|' + NUM + '|' + ID,
+  java:'(\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?(?:\\*\\/|$))|(' + STR_BASIC + ')|' + NUM + '|' + ID
+};
+function escHtml(s){ return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function highlight(code, lang){
+  const src = RE_SRC[lang];
+  if(!src) return escHtml(code);
+  const re = new RegExp(src, lang === 'cpp' ? 'gm' : 'g');
+  let out = '', last = 0, m;
+  while((m = re.exec(code)) !== null){
+    if(m[0].length === 0){ re.lastIndex++; continue; }
+    out += escHtml(code.slice(last, m.index));
+    let cls = null;
+    if(m[1]) cls = 'com';
+    else if(m[2]) cls = 'str';
+    else if(m[3]) cls = 'num';
+    else if(m[4]){
+      if(KWSET[lang].has(m[4])) cls = 'kw';
+      else if(TYSET[lang].has(m[4])) cls = 'ty';
+      else if(code.charAt(re.lastIndex) === '(') cls = 'fn';
+    }
+    out += cls ? '<span class="tk-' + cls + '">' + escHtml(m[0]) + '</span>' : escHtml(m[0]);
+    last = re.lastIndex;
+  }
+  return out + escHtml(code.slice(last));
+}
+/*PURE-END*/
+
+/* ---------------------------------------------------------------- engines */
+const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+const JS_LIMIT = 3500, PY_LIMIT = 5000;
+
+const PY_HARNESS = String.raw`
+import json, sys, io, time, traceback
+sys.setrecursionlimit(3000)
+_fn = None
+
+def _fmt_exc():
+    t, v, tb = sys.exc_info()
+    lines = [fr.lineno for fr in traceback.extract_tb(tb) if fr.filename == 'solution.py']
+    where = (' (line %d)' % lines[-1]) if lines else ''
+    if isinstance(v, SyntaxError):
+        where = ' (line %s)' % v.lineno
+    return ''.join(traceback.format_exception_only(t, v)).strip() + where
+
+def _prep(code, fn):
+    global _fn
+    ns = {'__name__': '__main__'}
+    try:
+        exec(compile(code, 'solution.py', 'exec'), ns)
+    except BaseException:
+        return json.dumps({'type': 'compile_error', 'message': _fmt_exc()})
+    f = ns.get(fn)
+    if f is None and 'Solution' in ns:
+        try:
+            f = getattr(ns['Solution'](), fn)
+        except Exception:
+            f = None
+    if f is None:
+        return json.dumps({'type': 'compile_error', 'message': 'Function ' + fn + ' is not defined. Keep the function name exactly as given.'})
+    _fn = f
+    return json.dumps({'type': 'ready'})
+
+def _run1(args_json):
+    args = json.loads(args_json)
+    buf = io.StringIO()
+    old = sys.stdout
+    sys.stdout = buf
+    t0 = time.perf_counter()
+    try:
+        r = _fn(*args)
+        ms = (time.perf_counter() - t0) * 1000
+        return json.dumps({'ok': True, 'value': r, 'ms': ms, 'stdout': buf.getvalue()[:4000]})
+    except BaseException:
+        return json.dumps({'ok': False, 'error': _fmt_exc(), 'stdout': buf.getvalue()[:4000]})
+    finally:
+        sys.stdout = old
+`;
+
+function workerJS(){
+  self.onmessage = function(e){
+    const d = e.data, code = d.code, fn = d.fn, tests = d.tests;
+    let logs = [];
+    const show = function(v){ if(typeof v==='string') return v; try{ return JSON.stringify(v); }catch(_){ return String(v); } };
+    const log = function(){ logs.push(Array.prototype.map.call(arguments, show).join(' ')); };
+    self.console = {log:log, info:log, warn:log, error:log, debug:log};
+    let f;
+    try{
+      f = new Function('console', code + '\n;return (typeof ' + fn + ' === "function") ? ' + fn + ' : null;')(self.console);
+    }catch(err){
+      self.postMessage({type:'compile_error', message:err.name + ': ' + err.message});
+      return;
+    }
+    if(!f){
+      self.postMessage({type:'compile_error', message:'Function "' + fn + '" is not defined. Keep the function name exactly as given.'});
+      return;
+    }
+    for(let i=0;i<tests.length;i++){
+      logs = [];
+      const t0 = performance.now();
+      try{
+        const r = f.apply(null, tests[i]);
+        const ms = performance.now() - t0;
+        if(r === undefined){
+          self.postMessage({type:'case', i:i, ok:false, error:'Your function returned undefined. Did you forget a return statement?', stdout:logs.join('\n'), ms:ms});
+          break;
+        }
+        self.postMessage({type:'case', i:i, ok:true, value:JSON.parse(JSON.stringify(r)), stdout:logs.join('\n').slice(0,4000), ms:ms});
+      }catch(err){
+        self.postMessage({type:'case', i:i, ok:false, error:(err && err.name ? err.name + ': ' : '') + (err && err.message ? err.message : String(err)), stdout:logs.join('\n').slice(0,4000), ms:0});
+        break;
+      }
+    }
+    self.postMessage({type:'done'});
+  };
+}
+
+function workerPy(){
+  let py = null;
+  self.onmessage = async function(e){
+    const m = e.data;
+    if(m.type === 'init'){
+      try{
+        importScripts(m.indexURL + 'pyodide.js');
+        py = await loadPyodide({indexURL:m.indexURL});
+        py.runPython(m.harness);
+        self.postMessage({type:'ready'});
+      }catch(err){
+        self.postMessage({type:'init_error', message:String(err && err.message ? err.message : err)});
+      }
+    }else if(m.type === 'run'){
+      const prep = JSON.parse(py.globals.get('_prep')(m.code, m.fn));
+      if(prep.type === 'compile_error'){ self.postMessage(prep); return; }
+      const run1 = py.globals.get('_run1');
+      for(let i=0;i<m.tests.length;i++){
+        const r = JSON.parse(run1(m.tests[i]));
+        r.type = 'case'; r.i = i;
+        self.postMessage(r);
+        if(!r.ok) break;
+      }
+      self.postMessage({type:'done'});
+    }
+  };
+}
+
+function makeWorker(fn){
+  const url = URL.createObjectURL(new Blob(['(' + fn.toString() + ')()'], {type:'text/javascript'}));
+  return new Worker(url);
+}
+
+function runJS(p, code, tests){
+  return new Promise(function(resolve){
+    let w;
+    try{ w = makeWorker(workerJS); }catch(err){ resolve({status:'engine_error', message:'This browser could not start a Web Worker: ' + err.message}); return; }
+    const cases = []; let timer;
+    const end = function(r){ clearTimeout(timer); try{ w.terminate(); }catch(_){} resolve(r); };
+    const arm = function(){ clearTimeout(timer); timer = setTimeout(function(){ end({status:'ok', cases:cases, timedOut:true}); }, JS_LIMIT); };
+    w.onmessage = function(e){
+      const m = e.data;
+      if(m.type === 'compile_error') end({status:'compile_error', message:m.message});
+      else if(m.type === 'case'){ cases[m.i] = m; arm(); }
+      else if(m.type === 'done') end({status:'ok', cases:cases});
+    };
+    w.onerror = function(e){ end({status:'compile_error', message:e.message || 'The script could not run.'}); };
+    arm();
+    w.postMessage({code:code, fn:p.fn, tests:tests.map(function(t){return t.args;})});
+  });
+}
+
+let pyWorker = null, pyReady = null, pyLoaded = false;
+function resetPy(){ try{ if(pyWorker) pyWorker.terminate(); }catch(_){} pyWorker = null; pyReady = null; pyLoaded = false; }
+function ensurePython(){
+  if(pyReady) return pyReady;
+  pyReady = new Promise(function(resolve, reject){
+    let w;
+    try{ w = makeWorker(workerPy); }catch(err){ pyReady = null; reject(err); return; }
+    pyWorker = w;
+    const fail = function(err){ clearTimeout(t); resetPy(); reject(err); };
+    const t = setTimeout(function(){ fail(new Error('The Python runtime took too long to load.')); }, 120000);
+    w.onmessage = function(e){
+      if(e.data.type === 'ready'){ clearTimeout(t); pyLoaded = true; resolve(w); }
+      else if(e.data.type === 'init_error') fail(new Error(e.data.message));
+    };
+    w.onerror = function(e){ fail(new Error(e.message || 'The worker failed to start.')); };
+    w.postMessage({type:'init', indexURL:PYODIDE_URL, harness:PY_HARNESS});
+  });
+  return pyReady;
+}
+
+async function runPython(p, code, tests, onStatus){
+  let w;
+  try{
+    if(!pyLoaded) onStatus('Loading the Python runtime (first run only, about 10 MB)...');
+    w = await ensurePython();
+  }catch(err){
+    return {status:'engine_error', message:'The in-browser Python runtime (Pyodide) could not load: ' + err.message + '\nPython runs in your browser, so it needs to download Pyodide from the jsDelivr CDN once. Check your connection, or try JavaScript, C++ or Java.'};
+  }
+  onStatus('Running...');
+  return new Promise(function(resolve){
+    const cases = []; let timer;
+    const done = function(r){ clearTimeout(timer); w.onmessage = null; resolve(r); };
+    const arm = function(){ clearTimeout(timer); timer = setTimeout(function(){ resetPy(); resolve({status:'ok', cases:cases, timedOut:true}); }, PY_LIMIT); };
+    w.onmessage = function(e){
+      const m = e.data;
+      if(m.type === 'compile_error') done({status:'compile_error', message:m.message});
+      else if(m.type === 'case'){ cases[m.i] = m; arm(); }
+      else if(m.type === 'done') done({status:'ok', cases:cases});
+    };
+    arm();
+    w.postMessage({type:'run', code:code, fn:p.fn, tests:tests.map(function(t){return JSON.stringify(t.args);})});
+  });
+}
+
+function b64(s){
+  const bytes = new TextEncoder().encode(s); let bin = '';
+  for(let i=0;i<bytes.length;i+=0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000));
+  return btoa(bin);
+}
+function unb64(s){
+  const bin = atob(s); const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+const sleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+function shiftLines(text, off){
+  return text.replace(/(?:main\.cpp|Main\.java|prog\.cpp)(?::(\d+))(?::\d+)?/g, function(m, n){
+    const k = parseInt(n,10) - off;
+    return k > 0 ? 'line ' + k : m;
+  }).slice(0, 2500);
+}
+
+async function runJudge0(lang, p, code, tests, onStatus){
+  const cfg = getEngine();
+  const base = cfg.url.replace(/\/+$/, '');
+  const headers = {'Content-Type':'application/json'};
+  if(cfg.token) headers['X-Auth-Token'] = cfg.token;
+  const src = lang === 'cpp' ? cppProgram(p, code) : javaProgram(p, code);
+  const body = JSON.stringify({source_code:b64(src), language_id:JUDGE0_IDS[lang], stdin:b64(buildStdin(p, tests)), cpu_time_limit:5, wall_time_limit:12, memory_limit:256000});
+  onStatus('Sending to the Judge0 server...');
+  let res;
+  try{
+    res = await fetch(base + '/submissions?base64_encoded=true&wait=false', {method:'POST', headers:headers, body:body});
+  }catch(err){
+    return {status:'engine_error', message:'Could not reach the Judge0 server at ' + base + '.\nC++ and Java are compiled on a Judge0 server, which needs a network connection and a host that allows it. Open Engine settings (gear icon) to change the server URL, or use Python / JavaScript, which run entirely in your browser.'};
+  }
+  if(!res.ok){
+    const t = await res.text().catch(function(){ return ''; });
+    return {status:'engine_error', message:'The Judge0 server answered with HTTP ' + res.status + '. ' + t.slice(0,200)};
+  }
+  const sub = await res.json();
+  onStatus('Compiling and running...');
+  for(let i=0;i<70;i++){
+    await sleep(i<3 ? 500 : 900);
+    let r;
+    try{
+      r = await fetch(base + '/submissions/' + sub.token + '?base64_encoded=true&fields=status,stdout,stderr,compile_output,message,time', {headers:headers});
+    }catch(err){ return {status:'engine_error', message:'Lost connection to the Judge0 server while waiting for the result.'}; }
+    if(!r.ok) return {status:'engine_error', message:'Judge0 answered with HTTP ' + r.status + ' while fetching the result.'};
+    const d = await r.json();
+    const sid = d.status ? d.status.id : 0;
+    if(sid <= 2) continue;
+    const dec = function(x){ return x ? unb64(x) : ''; };
+    const stdout = dec(d.stdout), stderr = dec(d.stderr), comp = dec(d.compile_output), msg = dec(d.message);
+    if(sid === 6) return {status:'compile_error', message:shiftLines((comp || msg).trim(), 3)};
+    if(sid === 13 || sid === 14) return {status:'engine_error', message:'Judge0 reported an internal error. ' + (msg || '').slice(0,200)};
+    const parsed = [];
+    const other = [];
+    stdout.split('\n').forEach(function(line){
+      if(line.indexOf(MARK) === 0){
+        try{ parsed.push({ok:true, value:JSON.parse(line.slice(MARK.length)), ms:0}); }
+        catch(_){ parsed.push({ok:false, error:'Could not read the output of this test case.', ms:0}); }
+      }else if(line.length) other.push(line);
+    });
+    const eng = {status:'ok', cases:parsed, stdout:other.join('\n').slice(0,4000), ms:parseFloat(d.time || '0') * 1000};
+    if(sid === 5) eng.timedOut = true;
+    else if(sid >= 7 && sid <= 12) eng.fatal = shiftLines((stderr || msg || (d.status && d.status.description) || 'Runtime error').trim(), 3).slice(0,1500);
+    return eng;
+  }
+  return {status:'engine_error', message:'The Judge0 server took too long to answer. Try again in a moment.'};
+}
+
+function runEngine(lang, p, code, tests, onStatus){
+  if(lang === 'javascript') return runJS(p, code, tests);
+  if(lang === 'python') return runPython(p, code, tests, onStatus);
+  return runJudge0(lang, p, code, tests, onStatus);
+}
+
+/* ---------------------------------------------------------------- storage */
+const mem = {};
+const store = {
+  get:function(k, d){
+    try{ const v = localStorage.getItem('abhyas.v1.' + k); if(v !== null) return JSON.parse(v); }catch(_){}
+    return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : d;
+  },
+  set:function(k, v){
+    mem[k] = v;
+    try{ localStorage.setItem('abhyas.v1.' + k, JSON.stringify(v)); }catch(_){}
+  }
+};
+function getEngine(){
+  const e = store.get('engine', null) || {};
+  return {url:e.url || 'https://ce.judge0.com', token:e.token || ''};
+}
+
+/* ---------------------------------------------------------------- helpers */
+const $ = function(s, r){ return (r || document).querySelector(s); };
+const $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+const esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+const byId = {}; PROBLEMS.forEach(function(p){ byId[p.id] = p; });
+const STAGES = [
+  {diff:'Easy', name:'Basic', blurb:'Hash maps, stacks, binary search and your first dynamic program. Learn to ask what you can remember instead of recompute.'},
+  {diff:'Medium', name:'Intermediate', blurb:'Two pointers, sliding windows, intervals, graphs and backtracking, each with the standard pattern.'},
+  {diff:'Hard', name:'Advanced', blurb:'Monotonic stacks, window tricks and 2-D DP, where brute force no longer finishes in time.'}
+];
+const CHECK = '<svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.6 2.6L10 3.4"/></svg>';
+function short(s, n){ n = n || 300; return s.length > n ? s.slice(0,n) + '... (' + s.length + ' characters in total)' : s; }
+function fmtVal(v){ return short(JSON.stringify(v)); }
+let toastTimer;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.hidden = true; }, 2600);
+}
+function solvedMap(){ return store.get('solved', {}); }
+function updateCount(){
+  const n = PROBLEMS.filter(function(p){ return solvedMap()[p.id]; }).length;
+  $('#count').innerHTML = '<b>' + n + '</b> of ' + PROBLEMS.length + ' solved';
+}
+
+/* ---------------------------------------------------------------- theme */
+function effectiveTheme(){
+  const t = document.documentElement.getAttribute('data-theme');
+  if(t) return t;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+const savedTheme = store.get('theme', null);
+if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+$('#themeBtn').addEventListener('click', function(){
+  const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  store.set('theme', next);
+});
+
+/* ---------------------------------------------------------------- router */
+function go(id){
+  try{ if((location.hash || '').replace(/^#/, '') !== id) location.hash = id; }catch(_){}
+  route(id);
+}
+function route(forced){
+  let id = typeof forced === 'string' ? forced : '';
+  if(typeof forced !== 'string'){ try{ id = (location.hash || '').replace(/^#/, ''); }catch(_){ id = ''; } }
+  window.scrollTo(0, 0);
+  if(byId[id]) showProblem(byId[id]);
+  else if(id === 'problems') showHome();
+  else showLanding();
+}
+document.addEventListener('click', function(e){
+  const sc = e.target.closest('[data-scroll]');
+  if(sc){
+    e.preventDefault();
+    const id = sc.getAttribute('data-scroll');
+    const doScroll = function(){ const el = document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); };
+    if($('#landing')) doScroll(); else { go(''); setTimeout(doScroll, 40); }
+    return;
+  }
+  const a = e.target.closest('[data-go]');
+  if(!a) return;
+  e.preventDefault();
+  go(a.getAttribute('data-go'));
+});
+window.addEventListener('hashchange', function(){ route(); });
+
+/* ---------------------------------------------------------------- home */
+const F = {q:'', diff:'All', topic:'All', status:'All'};
+function showHome(){
+  const solved = solvedMap();
+  const done = PROBLEMS.filter(function(p){ return solved[p.id]; }).length;
+  const next = PROBLEMS.find(function(p){ return !solved[p.id]; });
+  const topics = Array.from(new Set(PROBLEMS.map(function(p){ return p.topic; }))).sort();
+  const stages = STAGES.map(function(s){
+    const list = PROBLEMS.filter(function(p){ return p.diff === s.diff; });
+    const n = list.filter(function(p){ return solved[p.id]; }).length;
+    return '<button class="stage' + (F.diff === s.diff ? ' on' : '') + '" data-stage="' + s.diff + '" aria-pressed="' + (F.diff === s.diff) + '">' +
+      '<h3>' + s.name + '</h3><div class="sub">' + s.blurb + '</div>' +
+      '<div class="meta tnum"><span>' + s.diff + ' &middot; ' + list.length + ' problems</span><span>' + n + ' solved</span></div>' +
+      '<div class="bar"><i style="width:' + (list.length ? Math.round(100 * n / list.length) : 0) + '%"></i></div></button>';
+  }).join('');
+  $('#view').innerHTML =
+    '<section class="intro compact"><h1>Problems</h1>' +
+    '<p class="lede">' + PROBLEMS.length + ' problems in three stages. Pick a stage, filter by topic, or continue where you left off.</p>' +
+    '<div class="intro-actions">' +
+      (next ? '<button class="btn primary" data-go="' + next.id + '">' + (done ? 'Continue with ' : 'Start with ') + esc(next.title) + '</button>' : '<span class="solved-badge">Everything solved. Nice work.</span>') +
+      '<span class="muted" style="font-size:.88rem">Progress and code are saved in this browser.</span></div></section>' +
+    '<section class="stages" aria-label="Stages">' + stages + '</section>' +
+    '<section aria-label="Problem list"><div class="filters">' +
+      '<input type="search" id="fq" placeholder="Search problems" aria-label="Search problems" value="' + esc(F.q) + '">' +
+      '<div class="seg" id="fdiff">' + ['All','Easy','Medium','Hard'].map(function(d){ return '<button data-d="' + d + '" aria-pressed="' + (F.diff === d) + '">' + d + '</button>'; }).join('') + '</div>' +
+      '<select id="ftopic" aria-label="Topic"><option>All</option>' + topics.map(function(t){ return '<option' + (F.topic === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+      '<select id="fstatus" aria-label="Status">' + ['All','Todo','Solved'].map(function(t){ return '<option' + (F.status === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select>' +
+    '</div><div class="table" id="rows"></div></section>' +
+    '<footer class="foot">Python and JavaScript run inside your browser. C++ and Java are compiled on a Judge0 server, which you can change in Engine settings on any problem.</footer>';
+  renderRows();
+  $('#fq').addEventListener('input', function(e){ F.q = e.target.value; renderRows(); });
+  $('#ftopic').addEventListener('change', function(e){ F.topic = e.target.value; renderRows(); });
+  $('#fstatus').addEventListener('change', function(e){ F.status = e.target.value; renderRows(); });
+  $$('#fdiff button').forEach(function(b){ b.addEventListener('click', function(){ setDiff(b.getAttribute('data-d')); }); });
+  $$('.stage').forEach(function(b){ b.addEventListener('click', function(){
+    const d = b.getAttribute('data-stage'); setDiff(F.diff === d ? 'All' : d);
+    const t = $('#rows'); if(t && t.scrollIntoView) t.scrollIntoView({behavior:'smooth', block:'start'});
+  }); });
+  updateCount();
+}
+function setDiff(d){
+  F.diff = d;
+  $$('#fdiff button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-d') === d)); });
+  $$('.stage').forEach(function(b){ const on = b.getAttribute('data-stage') === d; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  renderRows();
+}
+function renderRows(){
+  const solved = solvedMap();
+  const q = F.q.trim().toLowerCase();
+  const list = PROBLEMS.filter(function(p){
+    if(F.diff !== 'All' && p.diff !== F.diff) return false;
+    if(F.topic !== 'All' && p.topic !== F.topic) return false;
+    if(F.status === 'Solved' && !solved[p.id]) return false;
+    if(F.status === 'Todo' && solved[p.id]) return false;
+    if(q && (p.title + ' ' + p.topic).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  const head = '<div class="row head"><span></span><span>Problem</span><span class="topic">Topic</span><span>Level</span></div>';
+  const body = list.map(function(p){
+    const i = PROBLEMS.indexOf(p) + 1;
+    return '<a class="row" href="#' + p.id + '" data-go="' + p.id + '"><span class="dot' + (solved[p.id] ? ' done' : '') + '" title="' + (solved[p.id] ? 'Solved' : 'Not solved yet') + '">' + (solved[p.id] ? CHECK : '') + '</span>' +
+      '<span class="t"><b>' + i + '. ' + esc(p.title) + '</b><small>' + esc(p.fn) + '(' + p.params.map(function(x){ return x[0]; }).join(', ') + ')</small></span>' +
+      '<span class="topic muted">' + esc(p.topic) + '</span><span><span class="pill ' + p.diff + '">' + p.diff + '</span></span></a>';
+  }).join('');
+  $('#rows').innerHTML = head + (list.length ? body : '<div class="empty">No problems match these filters.</div>');
+}
+
+/* ---------------------------------------------------------------- landing */
+function showLanding(){
+  const demo = byId['two-sum'] || PROBLEMS[0];
+  const total = PROBLEMS.length;
+  const tests = PROBLEMS.reduce(function(a, p){ return a + p.tests.length; }, 0);
+  const hidden = PROBLEMS.reduce(function(a, p){ return a + p.tests.length - p.visible; }, 0);
+  const topics = Array.from(new Set(PROBLEMS.map(function(p){ return p.topic; })));
+  const stages = STAGES.map(function(s){
+    const n = PROBLEMS.filter(function(p){ return p.diff === s.diff; }).length;
+    return '<a class="stage" href="#problems" data-stage-go="' + s.diff + '"><h3>' + s.name + '</h3><div class="sub">' + s.blurb + '</div>' +
+      '<div class="meta tnum"><span>' + s.diff + '</span><span>' + n + ' problems</span></div></a>';
+  }).join('');
+  $('#view').innerHTML = `
+  <div id="landing">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Free. No sign-up needed.</span>
+        <h1>Practice data structures and algorithms until they click.</h1>
+        <p class="lede"><span class="hindi">Abhyas</span> (&#2309;&#2349;&#2381;&#2351;&#2366;&#2360;) means practice. Work through ${total} problems from your first hash map to hard dynamic programming. Write code in Python, JavaScript, C++ or Java and get judged on hidden test cases.</p>
+        <div class="hero-cta">
+          <button class="btn primary lg" data-go="problems">Start practicing</button>
+          <button class="btn lg" data-scroll="stages">See the roadmap</button>
+        </div>
+        <p class="hero-note">Python and JavaScript run in your browser, so there is nothing to install.</p>
+      </div>
+      <div class="demo" aria-label="Example of a solved problem">
+        <div class="demo-bar"><span>two_sum.py</span><span class="pill Easy">Easy</span></div>
+        <pre class="code">${highlight(demo.solution, 'python')}</pre>
+        <div class="demo-res"><b>Accepted</b><span class="muted tnum">${demo.tests.length} of ${demo.tests.length} test cases passed</span><span class="chip big">Time ${demo.time}</span><span class="chip big">Space ${demo.space}</span></div>
+      </div>
+    </section>
+
+    <div class="statline" role="list">
+      <div role="listitem"><b class="tnum">${total}</b><span>problems, Easy to Hard</span></div>
+      <div role="listitem"><b class="tnum">${tests}</b><span>test cases, ${hidden} of them hidden</span></div>
+      <div role="listitem"><b class="tnum">4</b><span>languages</span></div>
+      <div role="listitem"><b class="tnum">0</b><span>locked problems</span></div>
+    </div>
+
+    <section class="sec" id="how">
+      <h2>How a session works</h2>
+      <p class="sec-lede">The loop is the same on every problem, so you can focus on the idea instead of the tool.</p>
+      <ol class="steps">
+        <li><h3>Pick a problem</h3><p>Start with Easy or jump to a topic. Each problem lists its constraints and worked examples.</p></li>
+        <li><h3>Write, run, submit</h3><p>Run against the samples first, then submit against hidden and large inputs. Slow solutions time out, just as they would in an interview.</p></li>
+        <li><h3>Learn from the result</h3><p>Stuck? Open hints one at a time. Solved? Read the editorial to compare approaches and complexity.</p></li>
+      </ol>
+    </section>
+
+    <section class="sec" id="features">
+      <h2>Everything is included</h2>
+      <p class="sec-lede">The parts other sites keep behind a subscription are part of every problem here.</p>
+      <div class="feats">
+        <div class="feat"><h3>Hidden and large test cases</h3><p>Edge cases, empty inputs and stress tests catch brute-force solutions that only pass the examples.</p></div>
+        <div class="feat"><h3>Hints that do not spoil</h3><p>Three hints per problem, from a gentle nudge to the key idea. You choose how many to reveal.</p></div>
+        <div class="feat"><h3>Editorials with Big-O</h3><p>A written explanation of the approach, its time and space complexity, and a reference solution.</p></div>
+        <div class="feat"><h3>Four languages</h3><p>Python, JavaScript, C++ and Java, each with starter code in the right signature.</p></div>
+        <div class="feat"><h3>Runs in your browser</h3><p>Python and JavaScript execute locally. C++ and Java are compiled on a Judge0 server you can change.</p></div>
+        <div class="feat"><h3>Your progress stays with you</h3><p>Solved problems and your code are saved in your browser, so you can close the tab and continue later.</p></div>
+      </div>
+    </section>
+
+    <section class="sec" id="stages">
+      <h2>A path from basic to advanced</h2>
+      <p class="sec-lede">Three stages, each building on the last. Choose one to see its problems.</p>
+      <div class="stages" style="margin-block:0 20px">${stages}</div>
+      <div class="chips" aria-label="Topics covered">${topics.map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('')}</div>
+    </section>
+
+    <section class="sec" id="faq">
+      <h2>Questions</h2>
+      <div class="faq" style="margin-top:24px">
+        <details><summary>Is it really free?</summary><p>Yes. Every problem, hint, editorial and solution is open. There is no paid tier and nothing is locked.</p></details>
+        <details><summary>Do I need an account?</summary><p>No. Your progress and code are saved in this browser. Clearing site data for this page will reset them.</p></details>
+        <details><summary>How is my code run?</summary><p>Python runs through Pyodide and JavaScript in a Web Worker, both inside your browser. C++ and Java are compiled by a Judge0 server, which is an open-source online judge.</p></details>
+        <details><summary>Are the test cases the same as on other sites?</summary><p>No. The problems are classics, but the statements, tests and solutions here are written for Abhyas.</p></details>
+        <details><summary>Can I use it offline?</summary><p>JavaScript works offline once the page has loaded. Python needs to download its runtime once, and C++ and Java need a connection to the judge server.</p></details>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <h2>Pick your first problem.</h2>
+      <button class="btn primary lg" data-go="problems">Start practicing</button>
+    </section>
+
+    <footer class="site-foot">
+      <div><b style="color:var(--ink)">Abhyas</b><br>Free DSA practice. &copy; 2026</div>
+      <nav aria-label="Footer"><a href="#problems" data-go="problems">Problems</a><a href="#stages" data-scroll="stages">Roadmap</a><a href="#faq" data-scroll="faq">FAQ</a></nav>
+      <div>Code runs on <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a> and <a href="https://judge0.com" target="_blank" rel="noopener">Judge0</a>.</div>
+    </footer>
+  </div>`;
+  $$('[data-stage-go]').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); F.diff = a.getAttribute('data-stage-go'); go('problems'); }); });
+  updateCount();
+}
+
+/* ---------------------------------------------------------------- problem page */
+let cur = null;
+let busy = false;
+
+function descHTML(p){
+  const ex = p.tests.slice(0,2).map(function(t, i){
+    const input = p.params.map(function(x, k){ return '<span class="k">' + esc(x[0]) + ' =</span> ' + esc(fmtVal(t.args[k])); }).join('\n');
+    return '<div class="ex"><div class="ex-h">Example ' + (i+1) + '</div><pre class="block">' + input + '\n<span class="k">output:</span> ' + esc(fmtVal(t.expected)) + '</pre></div>';
+  }).join('');
+  const modeNote = p.cmp === 'flat' ? 'The order of the returned values does not matter.' : p.cmp === 'rows' ? 'The order of the lists, and of the numbers inside each list, does not matter.' : '';
+  return p.desc + ex + '<h2>Constraints</h2><ul>' + p.constraints.map(function(c){ return '<li>' + c + '</li>'; }).join('') + '</ul>' +
+    (modeNote ? '<p class="note">' + modeNote + '</p>' : '') +
+    '<h2>Function to complete</h2><p><code>' + esc(p.fn) + '(' + p.params.map(function(x){ return x[0] + ': ' + TYPE.py[x[1]]; }).join(', ') + ') -> ' + esc(TYPE.py[p.ret]) + '</code></p>';
+}
+
+function showProblem(p){
+  const solved = solvedMap();
+  const idx = PROBLEMS.indexOf(p);
+  const prev = PROBLEMS[idx - 1], next = PROBLEMS[idx + 1];
+  const lang = store.get('lang', 'python');
+  cur = {p:p, lang:LANGS[lang] ? lang : 'python', hints:0, tab:'desc', detail:0, verdict:null, tests:null};
+  $('#view').innerHTML =
+    '<div class="pv-head"><a class="back" href="#problems" data-go="problems">&larr; All problems</a>' +
+    '<h1>' + (idx + 1) + '. ' + esc(p.title) + '</h1>' +
+    '<span class="pv-tags"><span class="pill ' + p.diff + '">' + p.diff + '</span><span class="chip">' + esc(p.topic) + '</span>' + (solved[p.id] ? '<span class="solved-badge">Solved</span>' : '') + '</span>' +
+    '<span class="pv-nav">' + (prev ? '<button class="btn sm" data-go="' + prev.id + '" title="' + esc(prev.title) + '">&larr; Previous</button>' : '') + (next ? '<button class="btn sm" data-go="' + next.id + '" title="' + esc(next.title) + '">Next &rarr;</button>' : '') + '</span></div>' +
+    '<div class="seg mobile-seg" id="paneSeg"><button data-pane="problem" aria-pressed="true">Problem</button><button data-pane="code" aria-pressed="false">Code</button></div>' +
+    '<div class="workspace" id="ws" data-pane="problem">' +
+      '<section class="pane problem"><div class="tabs" role="tablist" id="ptabs">' +
+        '<button role="tab" data-tab="desc" aria-selected="true">Description</button><button role="tab" data-tab="hints" aria-selected="false">Hints</button><button role="tab" data-tab="edit" aria-selected="false">Editorial</button></div>' +
+        '<div class="scroll" id="ptab"></div></section>' +
+      '<section class="pane code"><div class="toolbar">' +
+        '<select id="lang" aria-label="Language">' + Object.keys(LANGS).map(function(k){ return '<option value="' + k + '"' + (k === cur.lang ? ' selected' : '') + '>' + LANGS[k].label + '</option>'; }).join('') + '</select>' +
+        '<button class="btn ghost sm" id="reset">Reset code</button>' +
+        '<button class="btn ghost sm" id="fsDown" aria-label="Smaller text" title="Smaller text">A-</button><button class="btn ghost sm" id="fsUp" aria-label="Larger text" title="Larger text">A+</button>' +
+        '<button class="icon-btn" id="gear" aria-label="Engine settings" title="Engine settings" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>' +
+        '<span class="grow"></span>' +
+        '<button class="btn" id="run" title="Ctrl/Cmd + Enter">Run</button><button class="btn primary" id="submit" title="Ctrl/Cmd + Shift + Enter">Submit</button></div>' +
+        '<div class="settings" id="settings" hidden></div>' +
+        '<div class="editor" id="editor"><pre class="gutter" id="gutter" aria-hidden="true">1</pre><div class="stack"><pre class="hl" id="hl" aria-hidden="true"></pre><textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Code editor"></textarea></div></div>' +
+        '<div class="ed-status"><span id="pos">Ln 1, Col 1</span><span class="grow"></span><span id="edinfo">4 spaces</span></div>' +
+        '<div class="results" id="results" aria-live="polite"></div></section></div>';
+  renderTab();
+  loadCode();
+  renderResultsEmpty();
+  $$('#ptabs button').forEach(function(b){ b.addEventListener('click', function(){ cur.tab = b.getAttribute('data-tab'); $$('#ptabs button').forEach(function(x){ x.setAttribute('aria-selected', String(x === b)); }); renderTab(); }); });
+  $$('#paneSeg button').forEach(function(b){ b.addEventListener('click', function(){ $('#ws').setAttribute('data-pane', b.getAttribute('data-pane')); $$('#paneSeg button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); }); }); });
+  $('#lang').addEventListener('change', function(e){ saveCode(); cur.lang = e.target.value; store.set('lang', cur.lang); loadCode(); renderResultsEmpty(); if(cur.lang === 'python') ensurePython().catch(function(){}); renderSettings(); });
+  $('#reset').addEventListener('click', function(e){
+    const b = e.currentTarget;
+    if(b.getAttribute('data-arm')){ $('#code').value = starter(p, cur.lang); saveCode(); syncGutter(); b.textContent = 'Reset code'; b.removeAttribute('data-arm'); toast('Starter code restored'); }
+    else{ b.setAttribute('data-arm', '1'); b.textContent = 'Click again to reset'; setTimeout(function(){ if(b.isConnected){ b.textContent = 'Reset code'; b.removeAttribute('data-arm'); } }, 3000); }
+  });
+  $('#gear').addEventListener('click', function(){ const s = $('#settings'); s.hidden = !s.hidden; renderSettings(); });
+  $('#run').addEventListener('click', function(){ execute('run'); });
+  $('#submit').addEventListener('click', function(){ execute('submit'); });
+  const ta = $('#code');
+  ta.addEventListener('input', function(){ syncGutter(); saveSoon(); updatePos(); });
+  ta.addEventListener('scroll', syncScroll);
+  ta.addEventListener('keydown', editorKeys);
+  ['keyup', 'click', 'focus'].forEach(function(ev){ ta.addEventListener(ev, updatePos); });
+  $('#fsDown').addEventListener('click', function(){ setFont(-1); });
+  $('#fsUp').addEventListener('click', function(){ setFont(1); });
+  applyFont();
+  if(cur.lang === 'python') ensurePython().catch(function(){});
+  updateCount();
+}
+
+function renderTab(){
+  const p = cur.p, el = $('#ptab');
+  if(cur.tab === 'desc'){ el.innerHTML = descHTML(p); return; }
+  if(cur.tab === 'hints'){
+    const shown = p.hints.slice(0, cur.hints).map(function(h, i){ return '<div class="hint"><b>Hint ' + (i+1) + ' of ' + p.hints.length + '</b>' + h + '</div>'; }).join('');
+    el.innerHTML = '<p class="muted">Try the problem for a few minutes first. Reveal one hint at a time, starting with the gentlest.</p>' + shown +
+      (cur.hints < p.hints.length ? '<button class="btn" id="moreHint">Show hint ' + (cur.hints + 1) + '</button>' : '<p class="note">That is every hint. The editorial explains the full approach.</p>');
+    const b = $('#moreHint'); if(b) b.addEventListener('click', function(){ cur.hints++; renderTab(); });
+    return;
+  }
+  el.innerHTML = '<p class="muted">Read this after you have tried the problem, or when you are stuck for good.</p>' +
+    '<div id="edBody" hidden>' + p.editorial.map(function(t){ return '<p>' + t + '</p>'; }).join('') +
+    '<div class="cx"><span class="chip big">Time ' + p.time + '</span><span class="chip big">Space ' + p.space + '</span></div>' +
+    '<h2>Reference solution (Python)</h2><pre class="block" id="refSol">' + esc(p.solution) + '</pre>' +
+    '<p style="margin-top:10px"><button class="btn sm" id="copySol">Copy solution</button></p></div>' +
+    '<button class="btn" id="showEd">Show editorial and solution</button>';
+  $('#showEd').addEventListener('click', function(e){ $('#edBody').hidden = false; e.currentTarget.hidden = true; });
+  $('#copySol').addEventListener('click', function(){
+    const txt = p.solution;
+    const fallback = function(){ const r = document.createRange(); r.selectNodeContents($('#refSol')); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); toast('Press Ctrl/Cmd + C to copy'); };
+    try{ navigator.clipboard.writeText(txt).then(function(){ toast('Solution copied'); }, fallback); }catch(_){ fallback(); }
+  });
+}
+
+function renderSettings(){
+  const s = $('#settings'); if(!s || s.hidden) return;
+  const c = getEngine();
+  s.innerHTML = '<div><b>Engine settings</b><div class="muted">Python and JavaScript run in your browser. C++ and Java are compiled by a Judge0 server. The free public one is the default; you can point this to your own Judge0 (free to self-host) instead.</div></div>' +
+    '<label>Judge0 server URL<input id="jurl" value="' + esc(c.url) + '" autocomplete="off"></label>' +
+    '<label>API token (only if your server needs one)<input id="jtok" value="' + esc(c.token) + '" autocomplete="off"></label>' +
+    '<div class="r"><button class="btn sm primary" id="jsave">Save</button><button class="btn sm" id="jdef">Use default</button></div>';
+  $('#jsave').addEventListener('click', function(){ store.set('engine', {url:$('#jurl').value.trim() || 'https://ce.judge0.com', token:$('#jtok').value.trim()}); toast('Engine settings saved'); });
+  $('#jdef').addEventListener('click', function(){ store.set('engine', {url:'https://ce.judge0.com', token:''}); renderSettings(); toast('Default server restored'); });
+}
+
+/* editor */
+function codeKey(){ return 'code.' + cur.p.id + '.' + cur.lang; }
+function loadCode(){ $('#code').value = store.get(codeKey(), null) || starter(cur.p, cur.lang); syncGutter(); updatePos(); }
+let saveT;
+function saveCode(){ if(cur && $('#code')) store.set(codeKey(), $('#code').value); }
+function saveSoon(){ clearTimeout(saveT); saveT = setTimeout(saveCode, 400); }
+function syncScroll(){
+  const ta = $('#code'), hl = $('#hl'), g = $('#gutter');
+  if(!ta || !hl) return;
+  hl.scrollTop = ta.scrollTop; hl.scrollLeft = ta.scrollLeft; g.scrollTop = ta.scrollTop;
+}
+function syncGutter(){
+  const ta = $('#code'); const n = ta.value.split('\n').length;
+  let s = ''; for(let i=1;i<=n;i++) s += i + (i < n ? '\n' : '');
+  $('#gutter').textContent = s;
+  $('#hl').innerHTML = highlight(ta.value, cur.lang) + '\n';
+  syncScroll();
+}
+function updatePos(){
+  const ta = $('#code'); if(!ta) return;
+  const upto = ta.value.slice(0, ta.selectionStart).split('\n');
+  const el = $('#pos'); if(el) el.textContent = 'Ln ' + upto.length + ', Col ' + (upto[upto.length - 1].length + 1);
+}
+function fontSize(){ return Math.min(20, Math.max(11, store.get('fs', 13.5))); }
+function applyFont(){ const ed = $('#editor'); if(ed) ed.style.setProperty('--ed-fs', fontSize() + 'px'); }
+function setFont(d){ store.set('fs', Math.min(20, Math.max(11, fontSize() + d))); applyFont(); }
+function insertText(ta, text){
+  ta.focus();
+  let ok = false;
+  try{ ok = document.execCommand('insertText', false, text); }catch(_){}
+  if(!ok){ ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input')); }
+}
+function deleteRange(ta, s, e){
+  ta.setSelectionRange(s, e);
+  let ok = false;
+  try{ ok = document.execCommand('delete'); }catch(_){}
+  if(!ok){ ta.setRangeText('', s, e, 'end'); ta.dispatchEvent(new Event('input')); }
+}
+const PAIRS = {'(':')', '[':']', '{':'}', '"':'"', "'":"'", '`':'`'};
+const CLOSERS = {')':1, ']':1, '}':1, '"':1, "'":1, '`':1};
+function lineBounds(ta){
+  const v = ta.value, s = ta.selectionStart, e = ta.selectionEnd;
+  const ls = v.lastIndexOf('\n', s - 1) + 1;
+  let le = v.indexOf('\n', e); if(le < 0) le = v.length;
+  if(e > s && v.charAt(e - 1) === '\n') le = e - 1;
+  return {ls:ls, le:le};
+}
+function indentSel(ta, out){
+  const v = ta.value, s = ta.selectionStart, e = ta.selectionEnd;
+  if(s === e && !out){ insertText(ta, '    '); return; }
+  const b = lineBounds(ta), lines = v.slice(b.ls, b.le).split('\n');
+  let first = 0, total = 0;
+  const res = lines.map(function(l, i){
+    if(out){
+      const m = l.match(/^( {1,4}|\t)/), d = m ? m[0].length : 0;
+      if(i === 0) first = -Math.min(d, s - b.ls);
+      total -= d; return l.slice(d);
+    }
+    if(i === 0) first = 4;
+    total += 4; return '    ' + l;
+  });
+  ta.setSelectionRange(b.ls, b.le); insertText(ta, res.join('\n'));
+  ta.setSelectionRange(Math.max(b.ls, s + first), e + total);
+}
+function toggleComment(ta){
+  const p = cur.lang === 'python' ? '#' : '//';
+  const b = lineBounds(ta), lines = ta.value.slice(b.ls, b.le).split('\n');
+  const allCommented = lines.every(function(l){ return !l.trim() || l.trim().indexOf(p) === 0; });
+  const res = lines.map(function(l){
+    if(!l.trim()) return l;
+    const ind = l.match(/^\s*/)[0], rest = l.slice(ind.length);
+    return allCommented ? ind + rest.replace(new RegExp('^' + p + ' ?'), '') : ind + p + ' ' + rest;
+  }).join('\n');
+  ta.setSelectionRange(b.ls, b.le); insertText(ta, res);
+  ta.setSelectionRange(b.ls, b.ls + res.length);
+}
+function editorKeys(e){
+  const ta = e.target, v = ta.value, s = ta.selectionStart, en = ta.selectionEnd;
+  const mod = e.ctrlKey || e.metaKey;
+  if(mod && e.key === 'Enter'){ e.preventDefault(); execute(e.shiftKey ? 'submit' : 'run'); return; }
+  if(mod && e.key === '/'){ e.preventDefault(); toggleComment(ta); return; }
+  if(e.key === 'Tab' && !mod){ e.preventDefault(); indentSel(ta, e.shiftKey); return; }
+  if(mod || e.altKey) return;
+  const prev = v.charAt(s - 1), next = v.charAt(s);
+  if(e.key === 'Enter' && !e.shiftKey){
+    const ls = v.lastIndexOf('\n', s - 1) + 1;
+    const line = v.slice(ls, s);
+    const indent = (line.match(/^[ \t]*/) || [''])[0];
+    const t = line.replace(/\s+$/, '');
+    const opens = /[{\[(]$/.test(t) || (cur.lang === 'python' && /:$/.test(t));
+    if(opens && PAIRS[prev] && PAIRS[prev] === next && prev !== '"' && prev !== "'"){
+      e.preventDefault();
+      insertText(ta, '\n' + indent + '    \n' + indent);
+      const pos = s + 1 + indent.length + 4; ta.setSelectionRange(pos, pos);
+      return;
+    }
+    if(indent || opens){ e.preventDefault(); insertText(ta, '\n' + indent + (opens ? '    ' : '')); }
+    return;
+  }
+  if(e.key === 'Backspace' && s === en && s > 0 && PAIRS[prev] && PAIRS[prev] === next){
+    e.preventDefault(); deleteRange(ta, s - 1, s + 1); return;
+  }
+  const k = e.key;
+  if(k.length !== 1) return;
+  if(CLOSERS[k] && next === k && s === en){ e.preventDefault(); ta.setSelectionRange(s + 1, s + 1); return; }
+  if(PAIRS[k] && (k !== '`' || cur.lang === 'javascript')){
+    if(s !== en){ e.preventDefault(); const sel = v.slice(s, en); insertText(ta, k + sel + PAIRS[k]); ta.setSelectionRange(s + 1, s + 1 + sel.length); return; }
+    const quote = k === '"' || k === "'" || k === '`';
+    const okNext = next === '' || /[\s)\]},;:]/.test(next);
+    const okPrev = !quote || !/[\w]/.test(prev);
+    if(okNext && okPrev){ e.preventDefault(); insertText(ta, k + PAIRS[k]); ta.setSelectionRange(s + 1, s + 1); }
+  }
+}
+
+/* results */
+function renderResultsEmpty(){
+  const el = $('#results');
+  el.innerHTML = '<div class="res-empty">Run checks the ' + cur.p.visible + ' sample cases. Submit checks all ' + cur.p.tests.length + ' cases, including hidden and large ones. Shortcuts: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run, add <kbd>Shift</kbd> to submit.</div>';
+}
+function setButtons(){ $('#run').disabled = busy; $('#submit').disabled = busy; }
+
+async function execute(mode){
+  if(busy) return;
+  busy = true; setButtons(); saveCode();
+  const p = cur.p, lang = cur.lang, code = $('#code').value;
+  const tests = mode === 'run' ? p.tests.slice(0, p.visible) : p.tests;
+  const el = $('#results');
+  const status = function(t){ el.innerHTML = '<div class="res-empty"><span class="spin"></span>' + esc(t) + '</div>'; };
+  status(lang === 'cpp' || lang === 'java' ? 'Preparing...' : 'Running...');
+  let eng;
+  try{ eng = await runEngine(lang, p, code, tests, status); }
+  catch(err){ eng = {status:'engine_error', message:String(err && err.message ? err.message : err)}; }
+  if(!cur || cur.p !== p){ busy = false; return; }
+  const v = makeVerdict(p, tests, eng);
+  cur.verdict = v; cur.tests = tests; cur.mode = mode; cur.detail = v.failIndex != null ? v.failIndex : 0;
+  if(mode === 'submit' && v.kind === 'ac'){
+    const s = solvedMap(); s[p.id] = {lang:lang, at:Date.now()}; store.set('solved', s);
+    updateCount();
+    const tag = $('.pv-tags'); if(tag && !$('.solved-badge', tag)) tag.insertAdjacentHTML('beforeend', '<span class="solved-badge">Solved</span>');
+    toast('Accepted. Marked as solved.');
+  }
+  renderVerdict();
+  busy = false; setButtons();
+}
+
+function renderVerdict(){
+  const v = cur.verdict, p = cur.p, tests = cur.tests, el = $('#results');
+  const titles = {ac:'Accepted', wa:'Wrong Answer', re:'Runtime Error', tle:'Time Limit Exceeded', ce:cur.lang === 'python' || cur.lang === 'javascript' ? 'Error in your code' : 'Compile Error', engine:'Could not run'};
+  const cls = v.kind === 'ac' ? 'ac' : (v.kind === 'engine' || v.kind === 'tle') ? 'warn' : 'bad';
+  let sub = '';
+  if(v.kind === 'ac') sub = v.passed + ' of ' + v.total + (cur.mode === 'run' ? ' sample cases passed' : ' test cases passed') + (v.ms ? ' &middot; ' + Math.max(1, Math.round(v.ms)) + ' ms' : '');
+  else if(v.failIndex != null) sub = v.passed + ' of ' + v.total + ' passed &middot; stopped at case ' + (v.failIndex + 1);
+  let html = '<div class="verdict ' + cls + '"><h3>' + titles[v.kind] + '</h3><span class="muted tnum">' + sub + '</span></div>';
+  if(v.kind === 'ce' || v.kind === 'engine'){
+    html += '<pre class="block">' + esc(v.message) + '</pre>';
+    el.innerHTML = html; return;
+  }
+  html += '<div class="cases" role="group" aria-label="Test cases">' + tests.map(function(t, i){
+    const st = v.kind === 'ac' ? 'pass' : i < v.failIndex ? 'pass' : i === v.failIndex ? 'fail' : 'skip';
+    return '<button class="' + st + '" data-i="' + i + '" aria-pressed="' + (i === cur.detail) + '" aria-label="Case ' + (i+1) + (st === 'pass' ? ' passed' : st === 'fail' ? ' failed' : ' not run') + '">' + (i+1) + '</button>';
+  }).join('') + '</div><div id="detail"></div>';
+  if(v.kind === 'ac' && cur.mode === 'submit'){
+    const idx = PROBLEMS.indexOf(p), nx = PROBLEMS[idx + 1];
+    html += '<p style="margin-top:12px">' + (nx ? '<button class="btn sm primary" data-go="' + nx.id + '">Next: ' + esc(nx.title) + '</button> ' : '') + '<button class="btn sm" id="seeEd">See the editorial</button></p>';
+  }
+  el.innerHTML = html;
+  $$('.cases button', el).forEach(function(b){ b.addEventListener('click', function(){ cur.detail = parseInt(b.getAttribute('data-i'), 10); $$('.cases button', el).forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); }); renderDetail(); }); });
+  const se = $('#seeEd'); if(se) se.addEventListener('click', function(){ cur.tab = 'edit'; $$('#ptabs button').forEach(function(x){ x.setAttribute('aria-selected', String(x.getAttribute('data-tab') === 'edit')); }); renderTab(); $('#ws').setAttribute('data-pane', 'problem'); $$('#paneSeg button').forEach(function(x){ x.setAttribute('aria-pressed', String(x.getAttribute('data-pane') === 'problem')); }); });
+  renderDetail();
+}
+
+function renderDetail(){
+  const v = cur.verdict, p = cur.p, i = cur.detail, t = cur.tests[i], el = $('#detail');
+  if(!el) return;
+  const hidden = cur.mode === 'submit' && i >= p.visible && i !== v.failIndex;
+  const failing = i === v.failIndex;
+  let h = '';
+  if(hidden){
+    el.innerHTML = '<p class="muted">Case ' + (i+1) + ' is a hidden test case' + (v.kind === 'ac' || i < v.failIndex ? ' and your solution passed it.' : ' and was not run.') + '</p>';
+    return;
+  }
+  if(!failing && v.kind !== 'ac' && i > v.failIndex){ el.innerHTML = '<p class="muted">Not run, because an earlier case failed.</p>'; return; }
+  const input = p.params.map(function(x, k){ return x[0] + ' = ' + fmtVal(t.args[k]); }).join('\n');
+  h += '<div class="kv"><div class="lab">Input</div><pre class="block">' + esc(input) + '</pre>';
+  if(failing && v.kind === 'wa'){
+    h += '<div class="lab">Your output</div><pre class="block">' + esc(fmtVal(v.actual)) + '</pre>';
+  }
+  if(failing && v.kind === 're'){
+    h += '<div class="lab">Error</div><pre class="block">' + esc(v.message) + '</pre>';
+  }
+  if(failing && v.kind === 'tle'){
+    h += '<p class="note">This case did not finish in time. Your approach is likely too slow for the input size. The hints and editorial describe a faster idea.</p>';
+  }
+  if(v.kind !== 'tle' && v.kind !== 're'){ h += '<div class="lab">Expected output</div><pre class="block">' + esc(fmtVal(t.expected)) + '</pre>'; }
+  else if(v.kind === 're'){ h += '<div class="lab">Expected output</div><pre class="block">' + esc(fmtVal(t.expected)) + '</pre>'; }
+  if(v.stdout && failing){ h += '<div class="lab">Your printed output</div><pre class="block">' + esc(short(v.stdout, 1500)) + '</pre>'; }
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+/* ---------------------------------------------------------------- boot */
+updateCount();
+route();
+if(store.get('lang', 'python') === 'python'){ setTimeout(function(){ ensurePython().catch(function(){}); }, 1500); }
+})();
+</script>
