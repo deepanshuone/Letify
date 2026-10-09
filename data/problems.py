@@ -1,4 +1,4 @@
-"""Problem bank for Abhyas.
+"""Problem bank for Letify.
 
 Each problem has a reference solution (Python). Expected outputs for every test
 are produced by running that reference, then the reference is cross-checked

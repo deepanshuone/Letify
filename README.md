@@ -1,50 +1,72 @@
-# Abhyas: a free LeetCode-style DSA practice site
+# Letify: free DSA practice
 
-26 problems in three stages (7 Easy, 13 Medium, 6 Hard), each with a statement, hidden test cases, three hints, an editorial with Big-O, and a reference solution. Everything is unlocked. Languages: Python, JavaScript, C++, Java.
+A free LeetCode-style practice site for data structures and algorithms. 26 problems in three stages (7 Easy, 13 Medium, 6 Hard), each with a statement, hidden tests, three hints, an editorial with Big-O and a reference solution. Everything is unlocked. Languages: Python, JavaScript, C++ and Java.
 
-The whole site is one file: `index.html`. No backend, no database, no login. Progress and your code are saved in the visitor's browser (localStorage).
+**Stack:** TypeScript, React and Vite for the site. Python (only for the build) generates the problem data. Python and JavaScript solutions run in the visitor's browser; C++ and Java run on a Judge0 server. It is a static site, so it can be hosted for free.
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder:
+```
+npm install
+npm run dev          # http://localhost:5173
+```
 
 ```
-python3 -m http.server 8000      # then open http://localhost:8000
+npm test             # unit tests (real Pyodide, real g++ and javac)
+npm run typecheck
+npm run build        # production build in dist/
+npm run e2e          # browser tests against dist/ (needs Chromium; see below)
 ```
 
-## Publish it for free
+## Publish it (GitHub Pages)
 
-Upload `index.html` to any static host: GitHub Pages, Cloudflare Pages, Netlify or Vercel. All have free plans. Nothing else is needed.
+The workflow in `.github/workflows/ci.yml` tests, builds and deploys on every push to `main`.
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+
+The build uses relative paths, so the same `dist/` also works on Cloudflare Pages, Netlify or any static host (no server rules are needed, routes use the URL hash).
 
 ## How code runs (and what is free)
 
-| Language   | Where it runs                          | Cost |
-|------------|----------------------------------------|------|
-| JavaScript | Web Worker in the visitor's browser    | free |
-| Python     | Pyodide (Python in WebAssembly), loaded from the jsDelivr CDN on first use (~10 MB) | free |
-| C++, Java  | A Judge0 server over HTTPS             | free public server, or self-host |
+| Language   | Where it runs                                              | Cost |
+|------------|------------------------------------------------------------|------|
+| JavaScript | A Web Worker in the visitor's browser                      | free |
+| Python     | Pyodide (Python in WebAssembly), served from this site (about 10 MB, loaded on first use) | free |
+| C++, Java  | A Judge0 server over HTTPS                                 | free public server, or self-host |
 
-- Python and JavaScript need no server, so they cost nothing and cannot be rate-limited.
-- C++ and Java use Judge0 CE. The default URL is `https://ce.judge0.com`. Public servers can change their limits, so for a real launch run your own: Judge0 CE is open source and has a Docker setup (https://github.com/judge0/judge0). Then open any problem, click the gear icon, and paste your server URL. Visitors can also change it themselves.
-- Infinite loops are stopped by a time limit (3.5 s for JavaScript, 5 s for Python, 5 s CPU for C++/Java).
+- Visitor code never runs on the page itself: it runs in a Web Worker, and an infinite loop is stopped by terminating the worker (3.5 s per case for JavaScript, 5 s for Python, 5 s CPU for C++ and Java).
+- C++ and Java use Judge0 CE. The default is `https://ce.judge0.com`. Public servers can change their limits, so for a real launch run your own (https://github.com/judge0/judge0, Docker) and enter its URL under the gear icon on any problem. Only `https://` URLs (or `localhost`) are accepted.
+
+## Security notes
+
+- No secrets in the frontend. The Judge0 token, if you use one, is typed by the visitor and stays in their browser.
+- A strict Content-Security-Policy is added to the production build: no inline or third-party scripts, fonts and Pyodide are served from the site itself. Visitor code runs in Web Workers loaded from files, so the page does not need `unsafe-eval`.
+- Problem statements are HTML written in `data/problems.py`. The data build only allows plain formatting tags (`p`, `code`, `sup`, ...) and no attributes.
+- Dependencies are pinned by `package-lock.json`. Pyodide is pinned to one version (`pyodide` in `package.json`).
 
 ## Add or change problems
 
-Problems live in `problems.py`. Each one has a statement, test inputs and a **reference solution in Python**. The expected outputs are produced by running that reference, so you never type answers by hand.
+Problems live in `data/problems.py`. Each one has a statement, test inputs and a **reference solution in Python**. Expected outputs come from running that reference, so answers are never typed by hand.
 
 ```
-python3 build.py
+npm run data     # python3 data/build.py
 ```
 
-`build.py` runs every reference, checks 17 of them against brute force on 400 random small inputs each, checks all numbers fit in 32-bit integers, and rewrites `index.html`.
+`data/build.py` runs every reference, cross-checks 17 of them against brute force on 400 random small inputs each, checks that all numbers fit in 32-bit integers and writes `src/data/problems.json` plus one `src/data/tests/<id>.json` per problem. The generated files are committed, so the website builds without Python; CI re-runs the script and fails if they are out of date.
 
-To add a problem, copy any `add(...)` block in `problems.py`. Supported parameter and return types: `int`, `bool`, `string`, `int[]`, `int[][]`. Compare modes: `exact`, `flat` (order of a list does not matter), `rows` (order of rows and of numbers inside each row does not matter).
+To add a problem, copy any `add(...)` block. Supported parameter and return types: `int`, `bool`, `string`, `int[]`, `int[][]`. Compare modes: `exact`, `flat` (order of a list does not matter), `rows` (order of rows and of numbers inside each row does not matter). Keep stress tests around 10,000 elements.
 
-Keep stress tests around 10,000 elements. Larger tests make `index.html` heavy for visitors.
+## Browser tests
 
-## Files
+`npm run e2e` serves `dist/` and drives a real Chromium: navigation, the editor, JavaScript, Python (real Pyodide), C++ and Java (a stand-in Judge0 that compiles with your local `g++` / `javac`), settings, persistence, the phone layout, and a check that nothing is blocked by the Content-Security-Policy. Set `CHROMIUM_PATH` to use a specific browser, or run `npx playwright-core install chromium` first.
 
-- `index.html`: the finished site, a complete HTML page with landing page and SEO tags (generated)
-- `template.html`: all the design and JavaScript
-- `problems.py`: the problem bank
-- `build.py`: generates `index.html`
+## Project layout
+
+```
+data/            problem bank and generator (Python)
+src/core/        types of code, drivers for C++/Java, verdicts, highlighter, editor keys, storage
+src/engines/     JavaScript worker, Python worker (Pyodide), Judge0 client
+src/components/  editor, results, tabs, header
+src/pages/       landing, problem list, problem page
+src/data/        generated problem data (do not edit by hand)
+tests/           unit tests    e2e/  browser tests
+```

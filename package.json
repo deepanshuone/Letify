@@ -1,0 +1,36 @@
+{
+  "name": "letify",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Free LeetCode-style practice for data structures and algorithms.",
+  "scripts": {
+    "predev": "node scripts/copy-pyodide.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-pyodide.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "data": "python3 data/build.py",
+    "e2e": "node e2e/run.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/hanken-grotesk": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "playwright-core": "^1.64.0",
+    "pyodide": "0.26.4",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

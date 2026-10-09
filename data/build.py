@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Build index.html from template.html + problems.py.
+"""Build the problem data the website reads (src/data/problems.json and src/data/tests/<id>.json).
 
-    python3 build.py
+    python3 data/build.py
 
 Steps: run every reference solution to produce expected outputs, cross-check the
 references against brute force on small random inputs, validate 32-bit ranges,
-then inject the problem data into the template.
+then write JSON. The generated files are committed, so the website builds without Python.
 """
 import copy
 import json
 import os
 import random
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -18,6 +19,10 @@ from pathlib import Path
 import problems as pb
 
 HERE = Path(__file__).parent
+ROOT = HERE.parent
+OUT = ROOT / "src" / "data"
+TESTS = OUT / "tests"
+VISIBLE = 3  # sample cases shown by Run and in the statement
 INT_MIN, INT_MAX = -(2 ** 31), 2 ** 31 - 1
 
 
@@ -60,12 +65,25 @@ def min_windows(s, t):
     return sum(1 for w in wins if w[0] == m)
 
 
+ALLOWED_TAGS = {"p", "code", "sup", "sub", "em", "strong", "b", "i", "ul", "ol", "li", "br", "pre"}
+
+
+def check_html(pid, fragments):
+    """The site renders statements, hints and editorials as HTML. Only plain formatting tags are allowed."""
+    for frag in fragments:
+        for tag in re.findall(r"<\s*/?\s*([A-Za-z][A-Za-z0-9]*)", frag):
+            assert tag.lower() in ALLOWED_TAGS, (pid, "tag not allowed in problem text", tag)
+        assert not re.search(r"<[^>]*\s(on\w+|style|href|src)\s*=", frag, re.I), (pid, "attribute not allowed")
+
+
 def main():
     out = []
+    all_tests = {}
     ids = set()
     for p in pb.P:
         assert p["id"] not in ids, p["id"]
         ids.add(p["id"])
+        check_html(p["id"], [p["desc"], *p["constraints"], *p["hints"], *p["editorial"]])
         ref = load_ref(p["solution"], p["fn"])
         tests = []
         for args in p["tests"]:
@@ -97,7 +115,7 @@ def main():
                     assert min_windows(s, tt) <= 1, ("min window not unique", s, tt)
 
         # --- brute force cross-check
-        if os.environ.get("ABHYAS_FAST"):
+        if os.environ.get("LETIFY_FAST"):
             print(f"  --  {p['id']}")
         elif p["id"] in pb.CHECKS:
             brute, gen, mode = pb.CHECKS[p["id"]]
@@ -120,45 +138,34 @@ def main():
         else:
             print(f"  ok  {p['id']:48s} (hand checked)")
 
-        entry = {
+        meta = {
             "id": p["id"], "title": p["title"], "diff": p["diff"], "topic": p["topic"],
             "fn": p["fn"], "params": [list(x) for x in p["params"]], "ret": p["ret"], "cmp": p["cmp"],
             "desc": p["desc"], "constraints": p["constraints"], "hints": p["hints"],
             "editorial": p["editorial"], "time": p["time"], "space": p["space"],
-            "solution": p["solution"], "tests": tests, "visible": 3,
+            "solution": p["solution"], "visible": VISIBLE, "testCount": len(tests),
+            # sample cases ship with the problem; the full set (hidden and large cases) loads when needed
+            "samples": tests[:VISIBLE],
         }
-        out.append(entry)
+        out.append(meta)
+        all_tests[p["id"]] = tests
 
-    # one stress test must exist for the medium and hard problems
     counts = Counter(p["diff"] for p in out)
     print("problems:", dict(counts), "total", len(out))
 
-    data = json.dumps(out, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
-    tpl = (HERE / "template.html").read_text()
-    assert "__PROBLEMS_JSON__" in tpl
-    fragment = tpl.replace("__PROBLEMS_JSON__", data)
+    def dump(obj):
+        # "<" is escaped so the JSON can never end a script tag if it is ever inlined
+        return json.dumps(obj, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
 
-    # Full HTML document for hosting (doctype, language, SEO tags).
-    cut = fragment.index('<div class="top">')
-    head_part, body_part = fragment[:cut], fragment[cut:]
-    head_part = head_part.replace("<title>Abhyas</title>", "<title>Abhyas: free DSA practice</title>")
-    desc = "Free LeetCode-style practice for data structures and algorithms. Problems from Easy to Hard with hidden tests, hints, editorials and solutions in Python, JavaScript, C++ and Java."
-    meta = (
-        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-        f'<meta name="description" content="{desc}">\n'
-        '<meta name="theme-color" content="#2F44D8">\n'
-        '<meta property="og:type" content="website">\n'
-        '<meta property="og:title" content="Abhyas: free DSA practice">\n'
-        f'<meta property="og:description" content="{desc}">\n'
-        '<meta name="twitter:card" content="summary">\n'
-    )
-    full = meta + head_part + "</head>\n<body>\n" + body_part + "\n</body>\n</html>\n"
-    (HERE / "index.html").write_text(full)
-    # Fragment form used for the Claude artifact preview (the artifact host adds its own document wrapper).
-    (HERE / "dist").mkdir(exist_ok=True)
-    (HERE / "dist" / "claude-preview.html").write_text(fragment)
-    print("wrote index.html", round(len(full) / 1024), "KB and dist/claude-preview.html")
+    OUT.mkdir(parents=True, exist_ok=True)
+    TESTS.mkdir(parents=True, exist_ok=True)
+    for old in TESTS.glob("*.json"):
+        old.unlink()
+    (OUT / "problems.json").write_text(dump(out) + "\n")
+    for pid, tests in all_tests.items():
+        (TESTS / f"{pid}.json").write_text(dump(tests) + "\n")
+    total = sum(len(t) for t in all_tests.values())
+    print(f"wrote {OUT.relative_to(ROOT)}/problems.json and {len(all_tests)} test files ({total} test cases)")
 
 
 if __name__ == "__main__":

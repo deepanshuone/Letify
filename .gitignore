@@ -1,4 +1,8 @@
+node_modules/
+dist/
+public/pyodide/
 __pycache__/
 *.pyc
-dist/
+*.tsbuildinfo
 .DS_Store
+e2e/.work/
