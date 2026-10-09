@@ -231,7 +231,7 @@ export function Landing() {
 
         <section className="lp-cta-band">
           <h2>Pick a problem and run your first test.</h2>
-          <Link className="lp-btn dark" to={{ name: 'problems' }}>
+          <Link className="lp-btn light" to={{ name: 'problems' }}>
             Start solving
           </Link>
         </section>

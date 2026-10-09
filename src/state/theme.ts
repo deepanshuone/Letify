@@ -12,7 +12,8 @@ function effective(): Theme {
 /** Apply the saved theme before the first paint so there is no flash. */
 export function initTheme(): void {
   const saved = store.get<Theme | null>('theme', null);
-  if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+  // Dark is the default look; a visitor's own choice is remembered.
+  document.documentElement.setAttribute('data-theme', saved === 'light' || saved === 'dark' ? saved : 'dark');
 }
 
 export function useTheme(): { theme: Theme; toggle(): void } {

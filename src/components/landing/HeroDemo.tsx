@@ -54,6 +54,12 @@ function useTilt() {
   return { ref, move, leave };
 }
 
+const SPARKS = Array.from({ length: 14 }, (_, k) => {
+  const a = (k / 14) * Math.PI * 2;
+  const far = 46 + (k % 3) * 18;
+  return { x: Math.cos(a) * far, y: Math.sin(a) * far - 10, r: (k % 2 ? 1 : -1) * (80 + k * 12), d: (k % 4) * 0.04, c: ['#7FE8C0', '#9387FF', '#4FC3F7', '#F5B85A'][k % 4]! };
+});
+
 export function HeroDemo() {
   const frame = useFrame();
   const tilt = useTilt();
@@ -120,6 +126,13 @@ export function HeroDemo() {
             <i key={k} className={k < lit ? 'on' : ''} />
           ))}
         </span>
+        {frame === 12 && (
+          <span className="lp-pop">
+            {SPARKS.map((s, k) => (
+              <i key={k} style={{ '--x': `${s.x}px`, '--y': `${s.y}px`, '--r': `${s.r}deg`, '--d': `${s.d}s`, '--c': s.c } as React.CSSProperties} />
+            ))}
+          </span>
+        )}
         <span className={`lp-verdict${passed ? ' ok' : ''}`}>{passed ? 'Accepted' : lit > 0 ? 'Running tests' : 'Ready'}</span>
         <span className="lp-count tnum">
           {lit} of {TESTS}
