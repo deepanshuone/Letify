@@ -133,16 +133,20 @@ describe('levels, summary, badges, daily problem', () => {
     expect(s.byDiff.Easy.total + s.byDiff.Medium.total + s.byDiff.Hard.total).toBe(PROBLEMS.length);
   });
   it('awards badges from real progress', () => {
-    const solved = Object.fromEntries(PROBLEMS.filter((p) => p.diff === 'Easy').map((p) => [p.id, { lang: 'python' as const, at: 1 }]));
+    const solved = Object.fromEntries(PROBLEMS.filter((p) => p.diff === 'Easy').slice(0, 40).map((p) => [p.id, { lang: 'python' as const, at: 1 }]));
     const d = data({ solved, subs: (['python', 'java', 'cpp', 'javascript'] as const).map((l, i) => sub('s' + i, 'two-sum', i, 'ac', l)) });
     const list = badges({ data: d, summary: summarize(d, PROBLEMS), streaks: streaks({}, '2026-01-01'), problems: PROBLEMS });
     const get = (id: string) => list.find((b) => b.id === id)!;
     expect(get('first').earned).toBe(true);
-    expect(get('easy-clear').earned).toBe(true);
     expect(get('polyglot').earned).toBe(true);
+    expect(get('easy-clear').earned).toBe(false);
     expect(get('fifty').earned).toBe(false);
     expect(get('fifty').have).toBeLessThan(50);
     expect(new Set(list.map((b) => b.id)).size).toBe(list.length);
+    const all = Object.fromEntries(PROBLEMS.filter((p) => p.diff === 'Easy').map((p) => [p.id, { lang: 'python' as const, at: 1 }]));
+    const d2 = data({ solved: all });
+    const full = badges({ data: d2, summary: summarize(d2, PROBLEMS), streaks: streaks({}, '2026-01-01'), problems: PROBLEMS });
+    expect(full.find((b) => b.id === 'easy-clear')!.earned).toBe(true);
   });
   it('picks the same daily problem for everyone and varies by day', () => {
     expect(dailyProblem('2026-10-09', PROBLEMS).id).toBe(dailyProblem('2026-10-09', PROBLEMS).id);

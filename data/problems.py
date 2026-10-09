@@ -998,3 +998,4 @@ KNOWN_QUEENS = {1: 1, 2: 0, 3: 0, 4: 2, 5: 10, 6: 4, 7: 40, 8: 92, 9: 352}
 
 # Larger problem sets live in data/bank/. Importing a module registers its problems.
 from bank import arrays, dp, graphs, strings, patterns, classics, depth  # noqa: E402,F401
+from bank import (hashing2, arrays3, windows2, bsearch2, stacks2, strings2, strings3, dp1d, dpgrid, dpknap, dpseq, gridgraph, graphpaths, trees1, trees2, lists1, backtrack2, greedy2, heap2, math2, bitsmatrix)  # noqa: E402,F401
