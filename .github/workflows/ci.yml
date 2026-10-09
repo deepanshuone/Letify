@@ -32,7 +32,13 @@ jobs:
           git diff --exit-code -- src/data
       - run: npm run typecheck
       - name: Unit tests (includes real Pyodide, g++ and javac)
-        run: npm test
+        run: |
+          npm test 2>&1 | tee test.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            echo "::error title=Unit tests failed::$(grep -vE '^\s*$' test.log | tail -n 40 | cut -c1-200 | head -c 3000 | sed ':a;N;$!ba;s/\n/ | /g')"
+          fi
+          exit "$code"
       - name: Build (accounts are switched on when the repository variables below are set)
         run: npm run build
         env:
