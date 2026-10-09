@@ -1,3 +1,4 @@
+import { BRAND } from '../config';
 import { useEffect } from 'react';
 import { Link } from '../components/common';
 import { ProblemRow } from '../components/ProblemRow';
@@ -9,7 +10,7 @@ import { planProgress } from '../user/stats';
 export function Plans() {
   const { data } = useUserData();
   useEffect(() => {
-    document.title = 'Study plans · Letify';
+    document.title = `Study plans · ${BRAND}`;
   }, []);
   return (
     <>
@@ -58,7 +59,7 @@ export function PlanDetail({ id }: { id: string }) {
   const next = planIds(plan).find((x) => !data.solved[x]);
   const pct = pr.total ? Math.round((100 * pr.solved) / pr.total) : 0;
   useEffect(() => {
-    document.title = `${plan.title} · Study plans · Letify`;
+    document.title = `${plan.title} · Study plans · ${BRAND}`;
   }, [plan.title]);
   return (
     <>

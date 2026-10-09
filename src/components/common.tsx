@@ -5,9 +5,9 @@ import type { Diff } from '../types';
 export function Logo() {
   return (
     <svg viewBox="0 0 26 26" aria-hidden="true">
-      <rect x="1" y="17" width="7" height="8" rx="1.5" fill="currentColor" opacity=".35" />
-      <rect x="9.5" y="10" width="7" height="15" rx="1.5" fill="currentColor" opacity=".65" />
-      <rect x="18" y="2" width="7" height="23" rx="1.5" fill="var(--accent)" />
+      <path d="M13 1.5 23.5 7.5 13 13.5 2.5 7.5Z" fill="#FFC93C" />
+      <path d="M2.5 7.5 13 13.5V24.5L2.5 18.5Z" fill="#2A3CF0" />
+      <path d="M23.5 7.5 13 13.5V24.5L23.5 18.5Z" fill="#1B27B8" />
     </svg>
   );
 }

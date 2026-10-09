@@ -1,3 +1,4 @@
+import { BRAND } from '../config';
 import { useEffect } from 'react';
 import { Link, Pill } from '../components/common';
 import { BY_ID, PROBLEMS } from '../data';
@@ -26,7 +27,7 @@ export function ContestPage() {
   const c = useContest();
   const { data } = useUserData();
   useEffect(() => {
-    document.title = 'Contest · Letify';
+    document.title = `Contest · ${BRAND}`;
   }, []);
 
   const history = Object.values(data.contests).sort((a, b) => b.start - a.start);

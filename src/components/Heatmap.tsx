@@ -43,7 +43,7 @@ function monthTotals(cells: HeatCell[]): { label: string; count: number; days: n
   return [...map.values()];
 }
 
-export function Heatmap({ activity, today }: { activity: Record<string, number>; today: string }) {
+export function Heatmap({ activity, today, bare = false }: { activity: Record<string, number>; today: string; bare?: boolean }) {
   const cells = useMemo(() => heatCells(activity, today), [activity, today]);
   const total = cells.reduce((a, c) => a + c.count, 0);
   const labels = cells.filter((c) => c.dow === 0 && Number(c.day.slice(8, 10)) <= 7);
@@ -66,6 +66,7 @@ export function Heatmap({ activity, today }: { activity: Record<string, number>;
           ))}
         </svg>
       </div>
+      {!bare && (
       <div className="heat-legend" aria-hidden="true">
         Less
         {[0, 1, 2, 3, 4].map((l) => (
@@ -75,6 +76,8 @@ export function Heatmap({ activity, today }: { activity: Record<string, number>;
         ))}
         More
       </div>
+      )}
+      {!bare && (
       <details className="heat-table">
         <summary>Show as a table</summary>
         <table>
@@ -96,6 +99,7 @@ export function Heatmap({ activity, today }: { activity: Record<string, number>;
           </tbody>
         </table>
       </details>
+      )}
     </div>
   );
 }

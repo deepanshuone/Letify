@@ -1,205 +1,205 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { BRAND, CLOUD_ENABLED } from '../config';
-import { Link, Pill, SectionLink } from '../components/common';
-import { Highlighted } from '../components/Highlighted';
+import { Heatmap } from '../components/Heatmap';
+import { HeroDemo } from '../components/landing/HeroDemo';
+import { Link, Pill, Rich, SectionLink } from '../components/common';
 import { BY_ID, PROBLEMS, TOPICS } from '../data';
 import { PLANS } from '../data/plans';
 import { navigate, takePendingSection } from '../router';
 import { useFilters } from '../state/filters';
-import { STAGES } from './stages';
+import { useUserData } from '../state/userdata';
+import { CONTEST_MINUTES, POINTS, clock, mulberry32, pickProblems } from '../user/contest';
+import { dayKey } from '../user/stats';
+
+const DAY = 86_400_000;
+
+/** Made-up activity for the example heatmap, always the same so the page does not flicker between visits. */
+function sampleActivity(now: number): Record<string, number> {
+  const rnd = mulberry32(11);
+  const out: Record<string, number> = {};
+  for (let d = 0; d < 230; d++) {
+    const busy = d < 40 ? 0.8 : 0.5;
+    if (rnd() < busy) out[dayKey(now - d * DAY)] = 1 + Math.floor(rnd() * 6);
+  }
+  return out;
+}
+
+const SAMPLE_PROGRESS = [100, 46, 17, 0];
+const ORDER = { Easy: 0, Medium: 1, Hard: 2 } as const;
 
 export function Landing() {
   const { setFilters } = useFilters();
-  const demo = BY_ID.get('two-sum') ?? PROBLEMS[0]!;
+  const { data } = useUserData();
   const total = PROBLEMS.length;
-  const tests = PROBLEMS.reduce((a, p) => a + p.testCount, 0);
-  const hidden = PROBLEMS.reduce((a, p) => a + p.testCount - p.visible, 0);
+  const now = useMemo(() => Date.now(), []);
+  const activity = useMemo(() => sampleActivity(now), [now]);
+  const contestIds = useMemo(() => pickProblems(PROBLEMS, {}, 2024), []);
+  const hint = BY_ID.get('two-sum')?.hints[0] ?? '';
+  const byTopic = useMemo(
+    () => TOPICS.map((t) => ({ topic: t, list: PROBLEMS.filter((p) => p.topic === t).sort((a, b) => ORDER[a.diff] - ORDER[b.diff]) })).sort((a, b) => b.list.length - a.list.length),
+    [],
+  );
 
   useEffect(() => {
     const id = takePendingSection();
     if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }, []);
 
-  const openStage = (diff: (typeof STAGES)[number]['diff']) => {
-    setFilters({ diff });
+  const openTopic = (topic: string) => {
+    setFilters({ topic, diff: 'All', status: 'All', q: '' });
     navigate({ name: 'problems' });
   };
 
   return (
     <div id="landing">
-      <section className="hero">
-        <div>
-          <span className="eyebrow">Free. Every feature unlocked.</span>
-          <h1>Practice data structures and algorithms until they click.</h1>
-          <p className="lede">
-            {BRAND} gives you {total} problems, from your first hash map to hard dynamic programming. Write code in Python, JavaScript, C++ or Java and get judged on hidden test cases.
-          </p>
-          <div className="hero-cta">
-            <Link className="btn primary lg" to={{ name: 'problems' }}>
-              Start practicing
-            </Link>
-            <Link className="btn lg" to={{ name: 'plans' }}>
-              Study plans
-            </Link>
-          </div>
-          <p className="hero-note">Python and JavaScript run in your browser, so there is nothing to install.</p>
-        </div>
-        <div className="demo" aria-label="Example of a solved problem">
-          <div className="demo-bar">
-            <span>two_sum.py</span>
-            <Pill diff="Easy" />
-          </div>
-          <pre className="code">
-            <Highlighted code={demo.solution} lang="python" />
-          </pre>
-          <div className="demo-res">
-            <b>Accepted</b>
-            <span className="muted tnum">
-              {demo.testCount} of {demo.testCount} test cases passed
-            </span>
-            <span className="chip big">Time {demo.time}</span>
-            <span className="chip big">Space {demo.space}</span>
-          </div>
-        </div>
-      </section>
-
-      <div className="statline" role="list">
-        <div role="listitem">
-          <b className="tnum">{total}</b>
-          <span>problems, Easy to Hard</span>
-        </div>
-        <div role="listitem">
-          <b className="tnum">{tests}</b>
-          <span>test cases, {hidden} of them hidden</span>
-        </div>
-        <div role="listitem">
-          <b className="tnum">4</b>
-          <span>languages</span>
-        </div>
-        <div role="listitem">
-          <b className="tnum">{PLANS.length}</b>
-          <span>study plans</span>
-        </div>
-        <div role="listitem">
-          <b className="tnum">0</b>
-          <span>locked problems</span>
-        </div>
-      </div>
-
-      <section className="sec" id="how">
-        <h2>How a session works</h2>
-        <p className="sec-lede">The loop is the same on every problem, so you can focus on the idea instead of the tool.</p>
-        <ol className="steps">
-          <li>
-            <h3>Pick a problem</h3>
-            <p>Start with Easy or jump to a topic. Each problem lists its constraints and worked examples.</p>
-          </li>
-          <li>
-            <h3>Write, run, submit</h3>
-            <p>Run against the samples first, then submit against hidden and large inputs. Slow solutions time out, just as they would in an interview.</p>
-          </li>
-          <li>
-            <h3>Learn from the result</h3>
-            <p>Stuck? Open hints one at a time. Solved? Read the editorial to compare approaches and complexity.</p>
-          </li>
-        </ol>
-      </section>
-
-      <section className="sec" id="features">
-        <h2>Everything is included</h2>
-        <p className="sec-lede">The parts other sites keep behind a subscription are part of every problem here.</p>
-        <div className="feats">
-          <div className="feat">
-            <h3>Hidden and large test cases</h3>
-            <p>Edge cases, empty inputs and stress tests catch brute-force solutions that only pass the examples.</p>
-          </div>
-          <div className="feat">
-            <h3>Hints that do not spoil</h3>
-            <p>Three hints per problem, from a gentle nudge to the key idea. You choose how many to reveal.</p>
-          </div>
-          <div className="feat">
-            <h3>Editorials with Big-O</h3>
-            <p>A written explanation of the approach, its time and space complexity, and a reference solution.</p>
-          </div>
-          <div className="feat">
-            <h3>Four languages</h3>
-            <p>Python, JavaScript, C++ and Java, each with starter code in the right signature.</p>
-          </div>
-          <div className="feat">
-            <h3>Runs in your browser</h3>
-            <p>Python and JavaScript execute locally. C++ and Java are compiled on a Judge0 server you can change.</p>
-          </div>
-          <div className="feat">
-            <h3>Study plans</h3>
-            <p>Guided paths such as arrays first, then graphs and dynamic programming, with a progress bar for each plan.</p>
-          </div>
-          <div className="feat">
-            <h3>Profile, streaks and badges</h3>
-            <p>An activity heatmap, daily streak, XP levels and badges show how much you practiced, in the spirit of HackerRank and CodeChef.</p>
-          </div>
-          <div className="feat">
-            <h3>Daily challenge</h3>
-            <p>One problem a day, the same for everyone, so there is always an easy place to start.</p>
-          </div>
-          <div className="feat">
-            <h3>Timed contests</h3>
-            <p>Four problems, 90 minutes, points and time penalties like a real contest. Hints close until it ends.</p>
-          </div>
-          <div className="feat">
-            <h3>Submissions, notes and stars</h3>
-            <p>Every submission is kept with its code. Write private notes and star the problems you want to revisit.</p>
-          </div>
-          <div className="feat">
-            <h3>Custom input</h3>
-            <p>Run your code on any input you type and see what it returns, without an expected answer in the way.</p>
-          </div>
-          <div className="feat">
-            <h3>{CLOUD_ENABLED ? 'Sync across devices' : 'Your progress stays with you'}</h3>
-            <p>
-              {CLOUD_ENABLED
-                ? 'Create a free account and your progress, submissions and code follow you to any device. You can also export everything as a file.'
-                : 'Progress and code are saved in your browser. Export them as a file any time, and import them on another device.'}
+      <section className="lp-hero">
+        <div className="lp-wrap lp-hero-grid">
+          <div className="lp-hero-text">
+            <h1>Solve DSA problems. All of it is free.</h1>
+            <p className="lede">
+              {total} problems from Easy to Hard, checked against hidden tests in Python, JavaScript, C++ or Java. Hints, editorials, study plans and timed contests are included.
             </p>
+            <div className="lp-cta">
+              <Link className="lp-btn main cta-main" to={{ name: 'problems' }}>
+                Start solving
+              </Link>
+              <Link className="lp-btn ghost" to={{ name: 'plans' }}>
+                See study plans
+              </Link>
+            </div>
+            <p className="lp-note">No sign-up needed. Python and JavaScript run right in your browser.</p>
           </div>
+          <HeroDemo />
         </div>
       </section>
 
-      <section className="sec" id="stages">
-        <h2>A path from basic to advanced</h2>
-        <p className="sec-lede">Three stages, each building on the last. Choose one to see its problems.</p>
-        <div className="stages" style={{ marginBlock: '0 20px' }}>
-          {STAGES.map((s) => {
-            const n = PROBLEMS.filter((p) => p.diff === s.diff).length;
-            return (
-              <a
-                key={s.diff}
-                className="stage"
-                href="#/problems"
-                onClick={(e) => {
-                  e.preventDefault();
-                  openStage(s.diff);
-                }}
-              >
-                <h3>{s.name}</h3>
-                <div className="sub">{s.blurb}</div>
-                <div className="meta tnum">
-                  <span>{s.diff}</span>
-                  <span>{n} problems</span>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-        <div className="chips" aria-label="Topics covered">
-          {TOPICS.map((t) => (
-            <span className="chip" key={t}>
-              {t}
-            </span>
-          ))}
-        </div>
-      </section>
+      <div className="lp-wrap">
+        <section className="lp-sec" id="topics" aria-labelledby="h-topics">
+          <h2 id="h-topics">Pick a topic</h2>
+          <p className="sec-lede">
+            Every square is one problem, coloured by level: green is Easy, amber is Medium, red is Hard. Squares fill in as you solve them.
+          </p>
+          <div className="lp-topics">
+            {byTopic.map(({ topic, list }) => {
+              const done = list.filter((p) => data.solved[p.id]).length;
+              return (
+                <a
+                  key={topic}
+                  className="lp-topic"
+                  href="#/problems"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openTopic(topic);
+                  }}
+                  aria-label={`${topic}: ${list.length} ${list.length === 1 ? 'problem' : 'problems'}, ${done} solved`}
+                >
+                  <b>{topic}</b>
+                  <span className="lp-sq" aria-hidden="true">
+                    {list.map((p) => (
+                      <i key={p.id} className={`${p.diff}${data.solved[p.id] ? ' done' : ''}`} />
+                    ))}
+                  </span>
+                  <small className="tnum">
+                    {done > 0 ? `${done} of ${list.length} solved` : `${list.length} ${list.length === 1 ? 'problem' : 'problems'}`}
+                  </small>
+                </a>
+              );
+            })}
+          </div>
+        </section>
 
-      <section className="sec" id="faq">
+        <section className="lp-sec" id="features" aria-labelledby="h-features">
+          <h2 id="h-features">What you get with every problem</h2>
+          <p className="sec-lede">Nothing here is behind a paywall. The examples below use sample data.</p>
+          <div className="lp-bento">
+            <article className="lp-tile t3">
+              <h3>Follow a study plan</h3>
+              <p>{PLANS.length} ordered paths, from Foundations to Hard Mode. Each step says what it teaches.</p>
+              <ul className="lp-plans">
+                {PLANS.slice(0, 4).map((pl, k) => (
+                  <li key={pl.id}>
+                    <span>{pl.title}</span>
+                    <span className={`level ${pl.level}`}>{pl.level}</span>
+                    <span className="bar" aria-hidden="true">
+                      <i style={{ width: `${SAMPLE_PROGRESS[k]}%` }} />
+                    </span>
+                    <small className="tnum">{SAMPLE_PROGRESS[k]}%</small>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="lp-tile t3">
+              <h3>Keep a daily streak</h3>
+              <p>Your profile shows streaks, XP levels, badges and a heatmap of every day you practiced.</p>
+              <div className="lp-heat">
+                <Heatmap activity={activity} today={dayKey(now)} bare />
+              </div>
+            </article>
+
+            <article className="lp-tile t2">
+              <h3>Race the clock</h3>
+              <p>
+                A virtual contest: {CONTEST_MINUTES} minutes, four problems, a penalty for each wrong try.
+              </p>
+              <div className="lp-clock tnum" aria-hidden="true">
+                {clock(CONTEST_MINUTES * 60_000)}
+              </div>
+              <ol className="lp-rounds">
+                {contestIds.map((id, k) => {
+                  const p = BY_ID.get(id)!;
+                  return (
+                    <li key={id}>
+                      <span className="lp-letter">{String.fromCharCode(65 + k)}</span>
+                      <span className="lp-rt">{p.title}</span>
+                      <Pill diff={p.diff} />
+                      <small className="tnum">{POINTS[p.diff]} pts</small>
+                    </li>
+                  );
+                })}
+              </ol>
+            </article>
+
+            <article className="lp-tile t2">
+              <h3>Stuck? Open one hint at a time</h3>
+              <p>Three hints per problem, from a small nudge to the key idea. You decide how far to go.</p>
+              <ol className="lp-hints">
+                <li className="open">
+                  <b>Hint 1</b>
+                  <Rich as="span" html={hint} />
+                </li>
+                <li>
+                  <b>Hint 2</b>
+                  <span>Closed until you open it</span>
+                </li>
+                <li>
+                  <b>Hint 3</b>
+                  <span>Closed until you open it</span>
+                </li>
+              </ol>
+            </article>
+
+            <article className="lp-tile t2">
+              <h3>Run it your way</h3>
+              <p>Python and JavaScript run on your device. C++ and Java are compiled by a Judge0 server you can change. Try any input with Custom input.</p>
+              <div className="lp-langs">
+                <span>Python</span>
+                <span>JavaScript</span>
+                <span>C++</span>
+                <span>Java</span>
+              </div>
+            </article>
+          </div>
+          <div className="chips lp-extras" aria-label="Also included">
+            {['Editorials with Big-O', 'Hidden and large tests', 'Submission history', 'Notes and stars', 'Daily challenge', 'Export your progress', 'Light and dark theme'].map((t) => (
+              <span className="chip" key={t}>
+                {t}
+              </span>
+            ))}
+          </div>
+        </section>
+
+      <section className="lp-sec" id="faq">
         <h2>Questions</h2>
         <div className="faq" style={{ marginTop: 24 }}>
           <details>
@@ -229,14 +229,15 @@ export function Landing() {
         </div>
       </section>
 
-      <section className="cta-band">
-        <h2>Pick your first problem.</h2>
-        <Link className="btn primary lg" to={{ name: 'problems' }}>
-          Start practicing
-        </Link>
-      </section>
+        <section className="lp-cta-band">
+          <h2>Pick a problem and run your first test.</h2>
+          <Link className="lp-btn dark" to={{ name: 'problems' }}>
+            Start solving
+          </Link>
+        </section>
+      </div>
 
-      <footer className="site-foot">
+      <footer className="site-foot lp-wrap">
         <div>
           <b style={{ color: 'var(--ink)' }}>{BRAND}</b>
           <br />
@@ -246,7 +247,7 @@ export function Landing() {
           <Link to={{ name: 'problems' }}>Problems</Link>
           <Link to={{ name: 'plans' }}>Study plans</Link>
           <Link to={{ name: 'contest' }}>Contest</Link>
-          <SectionLink id="stages">Roadmap</SectionLink>
+          <SectionLink id="topics">Topics</SectionLink>
           <SectionLink id="faq">FAQ</SectionLink>
         </nav>
         <div>

@@ -1,5 +1,5 @@
 /** Names and defaults in one place, so renaming the site or changing a default is a one-line edit. */
-export const BRAND = 'Letify';
+export const BRAND = 'AlgoAdda';
 export const TAGLINE = 'Free DSA practice';
 export const DESCRIPTION =
   'Free LeetCode-style practice for data structures and algorithms. Problems from Easy to Hard with hidden tests, hints, editorials and solutions in Python, JavaScript, C++ and Java.';

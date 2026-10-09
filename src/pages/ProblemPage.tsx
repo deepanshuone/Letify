@@ -1,3 +1,4 @@
+import { BRAND } from '../config';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Editor } from '../components/Editor';
 import { EngineSettings } from '../components/EngineSettings';
@@ -95,7 +96,7 @@ export function ProblemPage({ p }: { p: Problem }) {
 
   useEffect(() => {
     alive.current = true;
-    document.title = `${p.title} · Letify`;
+    document.title = `${p.title} · ${BRAND}`;
     return () => {
       alive.current = false;
       clearTimeout(saveTimer.current);

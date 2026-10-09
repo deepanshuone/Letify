@@ -1,3 +1,4 @@
+import { BRAND } from '../config';
 import { useEffect, useMemo, useRef } from 'react';
 import { Heatmap } from '../components/Heatmap';
 import { Link, Pill } from '../components/common';
@@ -37,7 +38,7 @@ export function Profile() {
   const file = useRef<HTMLInputElement>(null);
   const { data } = ud;
   useEffect(() => {
-    document.title = 'Your profile · Letify';
+    document.title = `Your profile · ${BRAND}`;
   }, []);
 
   const now = Date.now();
@@ -58,7 +59,7 @@ export function Profile() {
     const url = URL.createObjectURL(new Blob([ud.exportJson()], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = `letify-progress-${today}.json`;
+    a.download = `algoadda-progress-${today}.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
@@ -69,7 +70,7 @@ export function Profile() {
       ud.importData(JSON.parse(await f.text()));
       toast('Progress imported and merged');
     } catch {
-      toast('That file could not be read as Letify progress');
+      toast('That file could not be read as a progress file');
     }
     if (file.current) file.current.value = '';
   };

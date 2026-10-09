@@ -1,4 +1,5 @@
 import { Component, useEffect, type ErrorInfo, type ReactNode } from 'react';
+import { BRAND } from './config';
 import { Header } from './components/Header';
 import { BY_ID } from './data';
 import { ContestPage } from './pages/Contest';
@@ -40,13 +41,23 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
 }
 
+function Shell() {
+  const route = useRoute();
+  // The landing page draws its own full-width bands; every other page sits in the standard column.
+  return (
+    <main className={route.name === 'landing' ? 'full' : 'wrap'} id="view" tabIndex={-1}>
+      <Page />
+    </main>
+  );
+}
+
 function Page() {
   const route = useRoute();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [route.name === 'problem' ? route.id : route.name]);
   useEffect(() => {
-    if (route.name === 'landing') document.title = 'Letify: free DSA practice';
+    if (route.name === 'landing') document.title = `${BRAND}: free DSA practice`;
   }, [route.name]);
 
   if (route.name === 'problem') {
@@ -75,9 +86,7 @@ export function App({ backendFactory }: { backendFactory?: () => Promise<CloudBa
                     Skip to content
                   </a>
                   <Header />
-                  <main className="wrap" id="view" tabIndex={-1}>
-                    <Page />
-                  </main>
+                  <Shell />
                 </FiltersProvider>
               </AuthDialogProvider>
             </ContestProvider>

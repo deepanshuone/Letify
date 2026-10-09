@@ -1,10 +1,10 @@
-# Letify: free DSA practice
+# AlgoAdda: free DSA practice
 
 A free LeetCode-style practice site for data structures and algorithms. 62 problems in three stages (16 Easy, 33 Medium, 13 Hard), each with a statement, hidden tests, three hints, an editorial with Big-O and a reference solution. Everything is unlocked. Languages: Python, JavaScript, C++ and Java.
 
 **Features** (ideas taken from LeetCode, HackerRank and CodeChef; all problem statements are original)
 
-- Study plans (7 guided paths with progress bars), daily challenge, random problem, topic and status filters, starred problems
+- Study plans (6 guided paths with progress bars), daily challenge, random problem, topic and status filters, starred problems
 - Profile with solved counts, day streak, activity heatmap, XP levels and 26 badges
 - Every submission is kept with its code (restore it in one click); private notes per problem
 - Custom input: run your code on any input you type

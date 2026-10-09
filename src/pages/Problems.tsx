@@ -1,3 +1,4 @@
+import { BRAND } from '../config';
 import { useEffect } from 'react';
 import { Link } from '../components/common';
 import { ProblemRow } from '../components/ProblemRow';
@@ -32,7 +33,7 @@ export function Problems() {
   });
 
   useEffect(() => {
-    document.title = 'Problems · Letify';
+    document.title = `Problems · ${BRAND}`;
   }, []);
 
   return (

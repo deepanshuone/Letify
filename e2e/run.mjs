@@ -114,10 +114,10 @@ const expectEq = (a, b, what) => {
 
 await scenario('landing page renders and navigates', async (page) => {
   await open(page);
-  expectEq(await page.title(), 'Letify: free DSA practice', 'title');
-  await page.waitForSelector('.hero h1');
-  expectEq(await page.locator('.statline b').first().innerText(), String(problems.length), 'problem count');
-  await page.click('.hero-cta a.primary');
+  expectEq(await page.title(), 'AlgoAdda: free DSA practice', 'title');
+  await page.waitForSelector('.lp-hero h1');
+  if (!(await page.locator('.lp-hero .lede').innerText()).includes(`${problems.length} problems`)) throw new Error('problem count missing from the intro');
+  await page.click('.lp-hero a.cta-main');
   await page.waitForSelector('.table .row:not(.head)');
   expectEq(await page.locator('.table a.row').count(), problems.length, 'rows');
   await page.fill('input[type=search]', 'sum');
@@ -134,7 +134,7 @@ await scenario('old-style links and unknown routes still work', async (page) => 
   await open(page, 'two-sum');
   await page.waitForSelector('.pv-head h1');
   await open(page, '/problem/does-not-exist');
-  await page.waitForSelector('.hero h1');
+  await page.waitForSelector('.lp-hero h1');
 });
 
 await scenario('theme toggle persists', async (page) => {
