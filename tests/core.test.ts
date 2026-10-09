@@ -70,6 +70,8 @@ describe('comparison', () => {
     expect(sameResult([2, 1], [1, 2], 'exact')).toBe(false);
     expect(sameResult([[3, 2], [1]], [[1], [2, 3]], 'rows')).toBe(true);
     expect(sameResult('x', 'x', 'rows')).toBe(true);
+    expect(sameResult([[2, 1], [1, 2]], [[1, 2], [2, 1]], 'rowset')).toBe(true);
+    expect(sameResult([[1, 2], [1, 2]], [[1, 2], [2, 1]], 'rowset')).toBe(false);
   });
 });
 

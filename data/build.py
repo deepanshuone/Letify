@@ -16,7 +16,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-import problems as pb
+import lib
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
@@ -37,6 +37,8 @@ def canon(v, mode):
         return sorted(v)
     if mode == "rows":
         return sorted(sorted(r) for r in v)
+    if mode == "rowset":
+        return sorted(v)
     return v
 
 
@@ -76,11 +78,28 @@ def check_html(pid, fragments):
         assert not re.search(r"<[^>]*\s(on\w+|style|href|src)\s*=", frag, re.I), (pid, "attribute not allowed")
 
 
-def main():
+RANK = {"Easy": 0, "Medium": 1, "Hard": 2}
+
+
+def main(only=None, write=True):
+    """Validate every problem and (unless `only` is given) write the JSON for the site.
+
+    python3 data/build.py                   build everything
+    python3 data/build.py --only bank.dp    validate just one bank module, write nothing
+    """
+    if only:
+        import importlib
+        importlib.import_module(only)
+        plist = list(lib.P)
+        write = False
+    else:
+        import problems as pb  # registers every problem
+        plist = list(pb.P)
+    plist.sort(key=lambda p: RANK[p["diff"]])  # Easy, then Medium, then Hard; registration order inside each
     out = []
     all_tests = {}
     ids = set()
-    for p in pb.P:
+    for p in plist:
         assert p["id"] not in ids, p["id"]
         ids.add(p["id"])
         check_html(p["id"], [p["desc"], *p["constraints"], *p["hints"], *p["editorial"]])
@@ -107,7 +126,9 @@ def main():
                 assert pairs + dup == 1, ("two-sum not unique", nums[:10])
         if p["id"] == "n-queens-ii":
             for t in tests:
-                assert t["expected"] == pb.KNOWN_QUEENS[t["args"][0]]
+                assert t["expected"] == {1: 1, 2: 0, 3: 0, 4: 2, 5: 10, 6: 4, 7: 40, 8: 92, 9: 352}[t["args"][0]]
+        if p["id"] in lib.VALIDATE:
+            lib.VALIDATE[p["id"]](tests)
         if p["id"] == "minimum-window-substring":
             for t in tests:
                 s, tt = t["args"]
@@ -117,8 +138,8 @@ def main():
         # --- brute force cross-check
         if os.environ.get("LETIFY_FAST"):
             print(f"  --  {p['id']}")
-        elif p["id"] in pb.CHECKS:
-            brute, gen, mode = pb.CHECKS[p["id"]]
+        elif p["id"] in lib.CHECKS:
+            brute, gen, mode = lib.CHECKS[p["id"]]
             r = random.Random(1234)
             n_ok = 0
             for _ in range(400):
@@ -157,6 +178,9 @@ def main():
         # "<" is escaped so the JSON can never end a script tag if it is ever inlined
         return json.dumps(obj, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
 
+    if not write:
+        print("validated only (nothing written)")
+        return
     OUT.mkdir(parents=True, exist_ok=True)
     TESTS.mkdir(parents=True, exist_ok=True)
     for old in TESTS.glob("*.json"):
@@ -170,7 +194,8 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
+        main(only)
     except AssertionError as e:
         print("BUILD FAILED:", e)
         sys.exit(1)

@@ -16,6 +16,7 @@ export function canon(v: unknown, mode: Cmp): unknown {
   if (mode === 'rows' && Array.isArray(v) && v.every(Array.isArray)) {
     return (v as number[][]).map((r) => r.slice().sort(numAsc)).sort(lexCmp);
   }
+  if (mode === 'rowset' && Array.isArray(v) && v.every(Array.isArray)) return (v as number[][]).slice().sort(lexCmp);
   return v;
 }
 

@@ -5,7 +5,7 @@ export interface Filters {
   q: string;
   diff: 'All' | Diff;
   topic: string;
-  status: 'All' | 'Todo' | 'Solved';
+  status: 'All' | 'Todo' | 'Solved' | 'Starred';
 }
 
 const initial: Filters = { q: '', diff: 'All', topic: 'All', status: 'All' };

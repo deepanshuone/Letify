@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { BRAND } from '../config';
+import { BRAND, CLOUD_ENABLED } from '../config';
 import { Link, Pill, SectionLink } from '../components/common';
 import { Highlighted } from '../components/Highlighted';
 import { BY_ID, PROBLEMS, TOPICS } from '../data';
+import { PLANS } from '../data/plans';
 import { navigate, takePendingSection } from '../router';
 import { useFilters } from '../state/filters';
 import { STAGES } from './stages';
@@ -28,7 +29,7 @@ export function Landing() {
     <div id="landing">
       <section className="hero">
         <div>
-          <span className="eyebrow">Free. No sign-up needed.</span>
+          <span className="eyebrow">Free. Every feature unlocked.</span>
           <h1>Practice data structures and algorithms until they click.</h1>
           <p className="lede">
             {BRAND} gives you {total} problems, from your first hash map to hard dynamic programming. Write code in Python, JavaScript, C++ or Java and get judged on hidden test cases.
@@ -37,9 +38,9 @@ export function Landing() {
             <Link className="btn primary lg" to={{ name: 'problems' }}>
               Start practicing
             </Link>
-            <SectionLink className="btn lg" id="stages">
-              See the roadmap
-            </SectionLink>
+            <Link className="btn lg" to={{ name: 'plans' }}>
+              Study plans
+            </Link>
           </div>
           <p className="hero-note">Python and JavaScript run in your browser, so there is nothing to install.</p>
         </div>
@@ -74,6 +75,10 @@ export function Landing() {
         <div role="listitem">
           <b className="tnum">4</b>
           <span>languages</span>
+        </div>
+        <div role="listitem">
+          <b className="tnum">{PLANS.length}</b>
+          <span>study plans</span>
         </div>
         <div role="listitem">
           <b className="tnum">0</b>
@@ -125,8 +130,36 @@ export function Landing() {
             <p>Python and JavaScript execute locally. C++ and Java are compiled on a Judge0 server you can change.</p>
           </div>
           <div className="feat">
-            <h3>Your progress stays with you</h3>
-            <p>Solved problems and your code are saved in your browser, so you can close the tab and continue later.</p>
+            <h3>Study plans</h3>
+            <p>Guided paths such as arrays first, then graphs and dynamic programming, with a progress bar for each plan.</p>
+          </div>
+          <div className="feat">
+            <h3>Profile, streaks and badges</h3>
+            <p>An activity heatmap, daily streak, XP levels and badges show how much you practiced, in the spirit of HackerRank and CodeChef.</p>
+          </div>
+          <div className="feat">
+            <h3>Daily challenge</h3>
+            <p>One problem a day, the same for everyone, so there is always an easy place to start.</p>
+          </div>
+          <div className="feat">
+            <h3>Timed contests</h3>
+            <p>Four problems, 90 minutes, points and time penalties like a real contest. Hints close until it ends.</p>
+          </div>
+          <div className="feat">
+            <h3>Submissions, notes and stars</h3>
+            <p>Every submission is kept with its code. Write private notes and star the problems you want to revisit.</p>
+          </div>
+          <div className="feat">
+            <h3>Custom input</h3>
+            <p>Run your code on any input you type and see what it returns, without an expected answer in the way.</p>
+          </div>
+          <div className="feat">
+            <h3>{CLOUD_ENABLED ? 'Sync across devices' : 'Your progress stays with you'}</h3>
+            <p>
+              {CLOUD_ENABLED
+                ? 'Create a free account and your progress, submissions and code follow you to any device. You can also export everything as a file.'
+                : 'Progress and code are saved in your browser. Export them as a file any time, and import them on another device.'}
+            </p>
           </div>
         </div>
       </section>
@@ -175,7 +208,11 @@ export function Landing() {
           </details>
           <details>
             <summary>Do I need an account?</summary>
-            <p>No. Your progress and code are saved in this browser. Clearing site data for this page will reset them.</p>
+            <p>
+              {CLOUD_ENABLED
+                ? 'No. Without one, progress and code stay in this browser. A free account adds cloud saving so you can switch devices.'
+                : 'No. Your progress and code are saved in this browser. You can export them from your profile and import them anywhere.'}
+            </p>
           </details>
           <details>
             <summary>How is my code run?</summary>
@@ -207,6 +244,8 @@ export function Landing() {
         </div>
         <nav aria-label="Footer">
           <Link to={{ name: 'problems' }}>Problems</Link>
+          <Link to={{ name: 'plans' }}>Study plans</Link>
+          <Link to={{ name: 'contest' }}>Contest</Link>
           <SectionLink id="stages">Roadmap</SectionLink>
           <SectionLink id="faq">FAQ</SectionLink>
         </nav>

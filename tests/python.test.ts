@@ -44,10 +44,15 @@ describe('python harness in Pyodide', () => {
   it('accepts the reference solution of every problem on every test', async () => {
     for (const p of PROBLEMS) {
       const tests = await loadTests(p.id);
-      const v = makeVerdict(p, tests, await run(p.solution, p.fn, tests));
+      const r = await run(p.solution, p.fn, tests);
+      const v = makeVerdict(p, tests, r);
       expect(v, p.id).toMatchObject({ kind: 'ac', passed: tests.length });
+      // The site stops a case after 5 s. The reference must stay far below that so ordinary solutions fit too.
+      const slowest = r.status === 'ok' ? Math.max(...r.cases.map((c) => c.ms ?? 0)) : 0;
+      if (slowest > 400) console.log(`slow reference: ${p.id} ${Math.round(slowest)} ms`);
+      expect(slowest, `${p.id} slowest case`).toBeLessThan(1500);
     }
-  }, 180_000);
+  }, 600_000);
 
   it('reports a wrong answer, a runtime error and a compile error', async () => {
     const p = PROBLEMS.find((x) => x.id === 'two-sum')!;

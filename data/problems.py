@@ -10,15 +10,7 @@ statement, inputs and reference solution, then run `python3 build.py`.
 import random
 from collections import deque
 
-P = []
-
-
-def add(**kw):
-    P.append(kw)
-
-
-def rnd(seed):
-    return random.Random(seed)
+from lib import P, add, rnd, CHECKS, VALIDATE  # noqa: F401  (registry shared with data/bank/*)
 
 
 # ---------------------------------------------------------------- EASY
@@ -981,7 +973,7 @@ def _uniq_minwin_case(r):
             return s, t
 
 
-CHECKS = {
+CHECKS.update({
     "3sum": (b_three, lambda r: [_gen_arr(r, -5, 5, 0, 9)], "rows"),
     "maximum-subarray": (b_maxsub, lambda r: [_gen_arr(r, -9, 9, 1, 9)], "exact"),
     "product-of-array-except-self": (b_prod, lambda r: [_gen_arr(r, -4, 4, 2, 7)], "exact"),
@@ -999,6 +991,10 @@ CHECKS = {
     "sliding-window-maximum": (b_win, lambda r: (lambda a: [a, r.randint(1, len(a))])(_gen_arr(r, -9, 9, 1, 10)), "exact"),
     "minimum-window-substring": (b_minwin, lambda r: list(_uniq_minwin_case(r)), "exact"),
     "edit-distance": (b_edit, lambda r: ["".join(r.choice("abc") for _ in range(r.randint(0, 7))), "".join(r.choice("abc") for _ in range(r.randint(0, 7)))], "exact"),
-}
+})
 
 KNOWN_QUEENS = {1: 1, 2: 0, 3: 0, 4: 2, 5: 10, 6: 4, 7: 40, 8: 92, 9: 352}
+
+
+# Larger problem sets live in data/bank/. Importing a module registers its problems.
+from bank import arrays, dp, graphs  # noqa: E402,F401

@@ -1,5 +1,5 @@
 export type PType = 'int' | 'bool' | 'string' | 'int[]' | 'int[][]';
-export type Cmp = 'exact' | 'flat' | 'rows';
+export type Cmp = 'exact' | 'flat' | 'rows' | 'rowset';
 export type Diff = 'Easy' | 'Medium' | 'Hard';
 export type Lang = 'python' | 'javascript' | 'cpp' | 'java';
 

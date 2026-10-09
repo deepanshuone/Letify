@@ -33,7 +33,12 @@ jobs:
       - run: npm run typecheck
       - name: Unit tests (includes real Pyodide, g++ and javac)
         run: npm test
-      - run: npm run build
+      - name: Build (accounts are switched on when the repository variables below are set)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          VITE_AUTH_PROVIDERS: ${{ vars.AUTH_PROVIDERS }}
       - uses: actions/upload-artifact@v4
         with:
           name: site

@@ -17,3 +17,14 @@ export function pyodideUrl(): string {
 
 export const JS_LIMIT_MS = 3500;
 export const PY_LIMIT_MS = 5000;
+
+/* Cloud sync (optional). Set these when building to turn on accounts. The anon key is meant to be public:
+   what a visitor can read and write is decided by the row-level-security rules in supabase/schema.sql. */
+export const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || '';
+export const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || '';
+/** Comma separated OAuth providers switched on in your Supabase project, for example "google,github". */
+export const AUTH_PROVIDERS: string[] = ((import.meta.env.VITE_AUTH_PROVIDERS as string | undefined) ?? '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter((s) => /^[a-z]+$/.test(s));
+export const CLOUD_ENABLED = !!SUPABASE_URL && !!SUPABASE_ANON_KEY;

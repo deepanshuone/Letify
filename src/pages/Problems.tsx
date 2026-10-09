@@ -1,17 +1,22 @@
 import { useEffect } from 'react';
-import { CheckIcon, Link, Pill } from '../components/common';
+import { Link } from '../components/common';
+import { ProblemRow } from '../components/ProblemRow';
 import { PROBLEMS, TOPICS } from '../data';
 import { navigate } from '../router';
 import { useFilters, type Filters } from '../state/filters';
-import { useProgress } from '../state/progress';
+import { useUserData } from '../state/userdata';
+import { dailyProblem, dayKey } from '../user/stats';
 import { STAGES } from './stages';
 
 const DIFFS: Filters['diff'][] = ['All', 'Easy', 'Medium', 'Hard'];
-const STATUSES: Filters['status'][] = ['All', 'Todo', 'Solved'];
+const STATUSES: Filters['status'][] = ['All', 'Todo', 'Solved', 'Starred'];
 
 export function Problems() {
   const { filters: f, setFilters } = useFilters();
-  const { solved } = useProgress();
+  const { data } = useUserData();
+  const { solved, stars } = data;
+  const daily = dailyProblem(dayKey(Date.now()), PROBLEMS);
+  const dailyDone = !!solved[daily.id];
   const done = PROBLEMS.filter((p) => solved[p.id]).length;
   const next = PROBLEMS.find((p) => !solved[p.id]);
   const q = f.q.trim().toLowerCase();
@@ -21,6 +26,7 @@ export function Problems() {
     if (f.topic !== 'All' && p.topic !== f.topic) return false;
     if (f.status === 'Solved' && !solved[p.id]) return false;
     if (f.status === 'Todo' && solved[p.id]) return false;
+    if (f.status === 'Starred' && !stars[p.id]?.on) return false;
     if (q && !`${p.title} ${p.topic}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -43,10 +49,37 @@ export function Problems() {
           ) : (
             <span className="solved-badge">Everything solved. Nice work.</span>
           )}
+          <button
+            className="btn"
+            onClick={() => {
+              const pool = PROBLEMS.filter((p) => !solved[p.id]);
+              const pick = (pool.length ? pool : PROBLEMS)[Math.floor(Math.random() * (pool.length || PROBLEMS.length))]!;
+              navigate({ name: 'problem', id: pick.id });
+            }}
+          >
+            Random problem
+          </button>
+          <Link className="btn" to={{ name: 'plans' }}>
+            Study plans
+          </Link>
           <span className="muted" style={{ fontSize: '.88rem' }}>
-            Progress and code are saved in this browser.
+            Progress and code are saved in this browser. Sign in to keep them in the cloud.
           </span>
         </div>
+      </section>
+
+      <section className="daily" aria-label="Daily challenge">
+        <div>
+          <div className="eyebrow">Daily challenge</div>
+          <b>{daily.title}</b> <span className="muted">&middot; {daily.diff} &middot; {daily.topic}</span>
+        </div>
+        {dailyDone ? (
+          <span className="solved-badge">Done for today</span>
+        ) : (
+          <Link className="btn primary sm" to={{ name: 'problem', id: daily.id }}>
+            Solve it
+          </Link>
+        )}
       </section>
 
       <section className="stages" aria-label="Stages">
@@ -110,28 +143,9 @@ export function Problems() {
             <span>Level</span>
           </div>
           {list.length === 0 && <div className="empty">No problems match these filters.</div>}
-          {list.map((p) => {
-            const isDone = !!solved[p.id];
-            return (
-              <Link key={p.id} className="row" to={{ name: 'problem', id: p.id }}>
-                <span className={`dot${isDone ? ' done' : ''}`} title={isDone ? 'Solved' : 'Not solved yet'}>
-                  {isDone && <CheckIcon />}
-                </span>
-                <span className="t">
-                  <b>
-                    {PROBLEMS.indexOf(p) + 1}. {p.title}
-                  </b>
-                  <small>
-                    {p.fn}({p.params.map((x) => x[0]).join(', ')})
-                  </small>
-                </span>
-                <span className="topic muted">{p.topic}</span>
-                <span>
-                  <Pill diff={p.diff} />
-                </span>
-              </Link>
-            );
-          })}
+          {list.map((p) => (
+            <ProblemRow key={p.id} p={p} number={PROBLEMS.indexOf(p) + 1} done={!!solved[p.id]} starred={!!stars[p.id]?.on} />
+          ))}
         </div>
       </section>
       <footer className="foot">Python and JavaScript run inside your browser. C++ and Java are compiled on a Judge0 server, which you can change in Engine settings on any problem.</footer>

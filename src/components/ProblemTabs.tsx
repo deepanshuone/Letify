@@ -5,7 +5,7 @@ import { Rich, fmtVal } from './common';
 import { useToast } from '../state/toast';
 
 export function Description({ p }: { p: Problem }) {
-  const modeNote = p.cmp === 'flat' ? 'The order of the returned values does not matter.' : p.cmp === 'rows' ? 'The order of the lists, and of the numbers inside each list, does not matter.' : '';
+  const modeNote = p.cmp === 'flat' ? 'The order of the returned values does not matter.' : p.cmp === 'rows' ? 'The order of the lists, and of the numbers inside each list, does not matter.' : p.cmp === 'rowset' ? 'The order of the lists does not matter. The numbers inside each list keep the order the statement asks for.' : '';
   return (
     <>
       <Rich html={p.desc} />
