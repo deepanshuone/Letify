@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { BRAND, CLOUD_ENABLED } from '../config';
 import { Heatmap } from '../components/Heatmap';
 import { HeroDemo } from '../components/landing/HeroDemo';
@@ -27,18 +27,7 @@ function sampleActivity(now: number): Record<string, number> {
 const SAMPLE_PROGRESS = [100, 46, 17, 0];
 const ORDER = { Easy: 0, Medium: 1, Hard: 2 } as const;
 
-/** The home page has its own light look (white, ink and one green); the rest of the site keeps the dark theme. */
-function useHomeLook() {
-  useLayoutEffect(() => {
-    document.documentElement.dataset.look = 'a';
-    return () => {
-      delete document.documentElement.dataset.look;
-    };
-  }, []);
-}
-
 export function Landing() {
-  useHomeLook();
   const { setFilters } = useFilters();
   const { data } = useUserData();
   const total = PROBLEMS.length;
