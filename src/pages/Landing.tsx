@@ -1,5 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { store } from '../core/storage';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { BRAND, CLOUD_ENABLED } from '../config';
 import { Heatmap } from '../components/Heatmap';
 import { HeroDemo } from '../components/landing/HeroDemo';
@@ -28,46 +27,18 @@ function sampleActivity(now: number): Record<string, number> {
 const SAMPLE_PROGRESS = [100, 46, 17, 0];
 const ORDER = { Easy: 0, Medium: 1, Hard: 2 } as const;
 
-const LOOKS = [
-  { id: 'a', name: 'Fresh' },
-  { id: 'b', name: 'Playful' },
-  { id: 'c', name: 'Terminal' },
-] as const;
-type Look = (typeof LOOKS)[number]['id'];
-const isLook = (v: unknown): v is Look => LOOKS.some((l) => l.id === v);
-
-/** Three home page looks to compare. The chosen one is applied to the whole page while the home page is open. */
-function LookSwitch() {
-  const [look, setLook] = useState<Look>(() => {
-    const v = store.get<unknown>('look', 'a');
-    return isLook(v) ? v : 'a';
-  });
+/** The home page has its own light look (white, ink and one green); the rest of the site keeps the dark theme. */
+function useHomeLook() {
   useLayoutEffect(() => {
-    document.documentElement.dataset.look = look;
+    document.documentElement.dataset.look = 'a';
     return () => {
       delete document.documentElement.dataset.look;
     };
-  }, [look]);
-  return (
-    <div className="look-switch" role="group" aria-label="Try another look for this page">
-      <span>Home page look</span>
-      {LOOKS.map((l) => (
-        <button
-          key={l.id}
-          aria-pressed={look === l.id}
-          onClick={() => {
-            setLook(l.id);
-            store.set('look', l.id);
-          }}
-        >
-          {l.name}
-        </button>
-      ))}
-    </div>
-  );
+  }, []);
 }
 
 export function Landing() {
+  useHomeLook();
   const { setFilters } = useFilters();
   const { data } = useUserData();
   const total = PROBLEMS.length;
@@ -92,7 +63,6 @@ export function Landing() {
 
   return (
     <div id="landing">
-      <LookSwitch />
       <section className="lp-hero">
         <div className="lp-wrap lp-hero-grid">
           <div className="lp-hero-text">
