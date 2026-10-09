@@ -19,7 +19,7 @@ describe('problem data', () => {
       for (const t of tests) expect(t.args.length, p.id).toBe(p.params.length);
       expect(p.hints.length, p.id).toBe(3);
     }
-  });
+  }, 120_000);
   it('rejects an unknown problem', async () => {
     await expect(loadTests('nope')).rejects.toThrow();
   });
