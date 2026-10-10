@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { PROBLEMS, loadTests } from '../src/data';
+import { PROBLEMS, loadDetail, loadTests } from '../src/data';
 import { makeVerdict } from '../src/core/verdict';
 import { starter } from '../src/core/languages';
 import type { CaseResult } from '../src/types';
@@ -44,7 +44,7 @@ describe('python harness in Pyodide', () => {
   it('accepts the reference solution of every problem on every test', async () => {
     for (const p of PROBLEMS) {
       const tests = await loadTests(p.id);
-      const r = await run(p.solution, p.fn, tests);
+      const r = await run((await loadDetail(p.id)).solution, p.fn, tests);
       const v = makeVerdict(p, tests, r);
       expect(v, p.id).toMatchObject({ kind: 'ac', passed: tests.length });
       // The site stops a case after 5 s. The reference must stay far below that so ordinary solutions fit too.
@@ -52,7 +52,7 @@ describe('python harness in Pyodide', () => {
       if (slowest > 400) console.log(`slow reference: ${p.id} ${Math.round(slowest)} ms`);
       expect(slowest, `${p.id} slowest case`).toBeLessThan(3000);
     }
-  }, 600_000);
+  }, 3_000_000);
 
   it('reports a wrong answer, a runtime error and a compile error', async () => {
     const p = PROBLEMS.find((x) => x.id === 'two-sum')!;

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { example, parseArg } from '../core/custom';
-import type { Problem, Value } from '../types';
+import type { FullProblem, Value } from '../types';
 import { fmtVal } from './common';
 
 export type CustomResult = { kind: 'value'; value: unknown; stdout: string; ms: number } | { kind: 'error'; title: string; message: string };
 
 /* Like the "test against custom input" box on HackerRank: run your code on any input and see what it returns. */
-export function CustomInput({ p, busy, onRun }: { p: Problem; busy: boolean; onRun(args: Value[]): Promise<CustomResult> }) {
+export function CustomInput({ p, busy, onRun }: { p: FullProblem; busy: boolean; onRun(args: Value[]): Promise<CustomResult> }) {
   const [texts, setTexts] = useState<string[]>(() => p.samples[0]!.args.map((a) => JSON.stringify(a)));
   const [errors, setErrors] = useState<(string | null)[]>([]);
   const [result, setResult] = useState<CustomResult | null>(null);

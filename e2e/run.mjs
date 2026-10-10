@@ -15,7 +15,8 @@ if (!existsSync(root + 'dist/index.html')) {
   console.error('dist/ is missing. Run `npm run build` first.');
   process.exit(1);
 }
-const problems = JSON.parse(readFileSync(root + 'src/data/problems.json', 'utf8'));
+const detail = (id) => JSON.parse(readFileSync(root + `src/data/details/${id}.json`, 'utf8'));
+const problems = JSON.parse(readFileSync(root + 'src/data/index.json', 'utf8'));
 const byId = Object.fromEntries(problems.map((p) => [p.id, p]));
 const fixture = (id, ext) => readFileSync(root + `tests/fixtures/${id}.${ext}`, 'utf8');
 
@@ -119,15 +120,28 @@ await scenario('landing page renders and navigates', async (page) => {
   if (!(await page.locator('.lp-hero .lede').innerText()).includes(`${problems.length} problems`)) throw new Error('problem count missing from the intro');
   await page.click('.lp-hero a.cta-main');
   await page.waitForSelector('.table .row:not(.head)');
-  expectEq(await page.locator('.table a.row').count(), problems.length, 'rows');
+  const PAGE = 60; // the list renders in pages
+  expectEq(await page.locator('.table a.row').count(), Math.min(problems.length, PAGE), 'rows');
+  if (problems.length > PAGE) {
+    await page.click('button:has-text("Show")');
+    if ((await page.locator('.table a.row').count()) <= PAGE) throw new Error('show more did not add rows');
+  }
   await page.fill('input[type=search]', 'sum');
   const n = await page.locator('.table a.row').count();
   if (n < 2 || n >= problems.length) throw new Error('search did not filter: ' + n);
+  await page.waitForSelector('.result-line:has-text(" of ")');
   await page.fill('input[type=search]', 'zzzz');
   await page.waitForSelector('.empty');
   await page.fill('input[type=search]', '');
   await page.click('.seg button:has-text("Hard")');
-  expectEq(await page.locator('.table a.row').count(), problems.filter((p) => p.diff === 'Hard').length, 'hard rows');
+  expectEq(await page.locator('.table a.row').count(), Math.min(PAGE, problems.filter((p) => p.diff === 'Hard').length), 'hard rows');
+  await page.click('.seg button:has-text("All")');
+  await page.click('button.tchip:has-text("Graphs")');
+  const graphRows = await page.locator('.table a.row').count();
+  if (graphRows < 1 || (await page.locator('.table a.row .topic:not(:has-text("Graphs"))').count()) !== 0) throw new Error('topic chip did not filter');
+  await page.selectOption('select[aria-label="Interview priority"]', 'must');
+  const must = await page.locator('.table a.row').count();
+  if (must < 1 || must > graphRows) throw new Error('interview filter: ' + must);
 });
 
 await scenario('old-style links and unknown routes still work', async (page) => {
@@ -249,7 +263,7 @@ await scenario('code and progress survive a reload', async (page) => {
 
 await scenario('Python runs in the browser (Pyodide)', async (page) => {
   await open(page, '/problem/two-sum');
-  await setCode(page, byId['two-sum'].solution);
+  await setCode(page, detail('two-sum').solution);
   await page.click('button:has-text("Run")');
   expectEq(await verdict(page, 120000), 'Accepted', 'python run');
   await page.click('button:has-text("Submit")');
@@ -263,7 +277,7 @@ await scenario('Python runs in the browser (Pyodide)', async (page) => {
   await page.click('button:has-text("Run")');
   await page.waitForFunction(() => document.querySelector('.verdict h3')?.textContent === 'Time Limit Exceeded', null, { timeout: 20000 });
   // the runtime restarts after a timeout and works again
-  await setCode(page, byId['two-sum'].solution);
+  await setCode(page, detail('two-sum').solution);
   await page.click('button:has-text("Run")');
   await page.waitForFunction(() => document.querySelector('.verdict h3')?.textContent === 'Accepted', null, { timeout: 120000 });
 });
@@ -544,7 +558,9 @@ await scenario('accounts: a down server never blocks practice', async (page) => 
 }, { cloud: true, allowConsole: /ERR_FAILED|Failed to load resource|Failed to fetch/ });
 
 await scenario('every problem page opens and has starter code', async (page) => {
-  for (const p of problems) {
+  // a spread of about 120 problems keeps this scenario short; the unit tests cover all of them
+  const step = Math.max(1, Math.floor(problems.length / 120));
+  for (const p of problems.filter((_, i) => i % step === 0)) {
     await open(page, '/problem/' + p.id);
     await page.waitForSelector('.stack textarea');
     const v = await page.locator('.stack textarea').inputValue();

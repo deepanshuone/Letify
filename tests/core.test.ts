@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PROBLEMS, BY_ID, loadTests } from '../src/data';
+import { PROBLEMS, BY_ID, loadDetail, loadTests } from '../src/data';
 import { buildStdin, cppProgram, fmtArg, javaProgram, MARK } from '../src/core/drivers';
 import { tokenize } from '../src/core/highlight';
 import { LANG_IDS, starter } from '../src/core/languages';
@@ -14,10 +14,11 @@ describe('problem data', () => {
     for (const p of PROBLEMS) {
       const tests = await loadTests(p.id);
       expect(tests.length, p.id).toBe(p.testCount);
-      expect(p.samples, p.id).toEqual(tests.slice(0, p.visible));
+      const d = await loadDetail(p.id);
+      expect(d.samples, p.id).toEqual(tests.slice(0, p.visible));
       expect(tests.length, p.id).toBeGreaterThan(p.visible);
       for (const t of tests) expect(t.args.length, p.id).toBe(p.params.length);
-      expect(p.hints.length, p.id).toBe(3);
+      expect(d.hints.length, p.id).toBe(3);
     }
   }, 120_000);
   it('rejects an unknown problem', async () => {
@@ -106,10 +107,11 @@ describe('verdicts', () => {
 });
 
 describe('highlighter', () => {
-  it('never loses or changes text, for every reference solution and language', () => {
+  it('never loses or changes text, for every reference solution and language', async () => {
     for (const p of PROBLEMS) {
+      const solution = (await loadDetail(p.id)).solution;
       for (const lang of LANG_IDS) {
-        const code = lang === 'python' ? p.solution : starter(p, lang) + '\n// note "unterminated\n/* open';
+        const code = lang === 'python' ? solution : starter(p, lang) + '\n// note "unterminated\n/* open';
         expect(tokenize(code, lang).map((t) => t.text).join(''), `${p.id} ${lang}`).toBe(code);
       }
     }

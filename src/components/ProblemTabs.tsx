@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { TYPE } from '../core/languages';
-import type { Problem } from '../types';
+import type { FullProblem } from '../types';
 import { Rich, fmtVal } from './common';
 import { useToast } from '../state/toast';
 
-export function Description({ p }: { p: Problem }) {
+export function Description({ p }: { p: FullProblem }) {
   const modeNote = p.cmp === 'flat' ? 'The order of the returned values does not matter.' : p.cmp === 'rows' ? 'The order of the lists, and of the numbers inside each list, does not matter.' : p.cmp === 'rowset' ? 'The order of the lists does not matter. The numbers inside each list keep the order the statement asks for.' : '';
   return (
     <>
@@ -40,7 +40,7 @@ export function Description({ p }: { p: Problem }) {
   );
 }
 
-export function Hints({ p, shown, onMore }: { p: Problem; shown: number; onMore(): void }) {
+export function Hints({ p, shown, onMore }: { p: FullProblem; shown: number; onMore(): void }) {
   return (
     <>
       <p className="muted">Try the problem for a few minutes first. Reveal one hint at a time, starting with the gentlest.</p>
@@ -63,7 +63,7 @@ export function Hints({ p, shown, onMore }: { p: Problem; shown: number; onMore(
   );
 }
 
-export function Editorial({ p }: { p: Problem }) {
+export function Editorial({ p }: { p: FullProblem }) {
   const [open, setOpen] = useState(false);
   const toast = useToast();
   const copy = async () => {

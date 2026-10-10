@@ -76,6 +76,17 @@ function Account() {
 }
 
 export function Header() {
+  const bar = useRef<HTMLElement>(null);
+  // Sticky group headers in the problem list sit right under the bar, whatever its height.
+  useEffect(() => {
+    const el = bar.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const set = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const { solved } = useProgress();
   const { toggle } = useTheme();
   const contest = useContest();
@@ -83,7 +94,7 @@ export function Header() {
   const n = PROBLEMS.filter((p) => solved[p.id]).length;
   const cur = (name: string) => (route.name === name || (name === 'plans' && route.name === 'plan') ? 'page' : undefined);
   return (
-    <header className="top">
+    <header className="top" ref={bar}>
       <div className="wrap">
         <Link className="brand" to={{ name: 'landing' }} aria-label={`${BRAND} home`}>
           <Logo />

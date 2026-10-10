@@ -16,13 +16,13 @@ describe('study plans', () => {
       expect(ids.length, plan.id).toBeGreaterThanOrEqual(10);
     }
   });
-  it('cover every problem at least once overall', () => {
-    const all = new Set(PLANS.flatMap(planIds));
-    for (const p of PROBLEMS) expect(all.has(p.id), p.id).toBe(true);
+  it('lists every problem marked must-know in the interview plan', () => {
+    const must = PROBLEMS.filter((p) => p.tier === 'must').map((p) => p.id);
+    expect(planIds(PLANS[0]!).sort()).toEqual(must.sort());
   });
   it('count progress per section', () => {
     const d = data({ solved: { 'contains-duplicate': { lang: 'python', at: 1 }, 'two-sum': { lang: 'python', at: 2 } } });
-    const pr = planProgress(PLANS[0]!, d);
+    const pr = planProgress(PLANS.find((x) => x.id === 'foundations')!, d);
     expect(pr.solved).toBe(2);
     expect(pr.sections[0]).toMatchObject({ solved: 2, total: 6 });
   });

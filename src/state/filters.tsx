@@ -6,9 +6,12 @@ export interface Filters {
   diff: 'All' | Diff;
   topic: string;
   status: 'All' | 'Todo' | 'Solved' | 'Starred';
+  /** Interview importance: only must-know, or must-know plus common. */
+  tier: 'All' | 'must' | 'core';
+  sort: 'roadmap' | 'easy' | 'hard' | 'title';
 }
 
-const initial: Filters = { q: '', diff: 'All', topic: 'All', status: 'All' };
+const initial: Filters = { q: '', diff: 'All', topic: 'All', status: 'All', tier: 'All', sort: 'roadmap' };
 
 interface FiltersValue {
   filters: Filters;

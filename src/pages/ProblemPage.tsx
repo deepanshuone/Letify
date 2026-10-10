@@ -11,12 +11,12 @@ import { GearIcon, Link, Pill } from '../components/common';
 import { LANGS, LANG_IDS, isLang, starter } from '../core/languages';
 import { store } from '../core/storage';
 import { makeVerdict } from '../core/verdict';
-import { PROBLEMS, loadTests } from '../data';
+import { PROBLEMS, loadFull, loadTests } from '../data';
 import { ensurePython, runEngine } from '../engines';
 import { useContest } from '../state/contest';
 import { useToast } from '../state/toast';
 import { useUserData } from '../state/userdata';
-import type { Lang, Problem, Value } from '../types';
+import type { FullProblem, Lang, Problem, Value } from '../types';
 import { PENALTY_MINUTES, clock } from '../user/contest';
 
 type Tab = 'desc' | 'hints' | 'edit' | 'subs' | 'notes';
@@ -62,12 +62,12 @@ function ContestBanner({ pid }: { pid: string }) {
   );
 }
 
-export function ProblemPage({ p }: { p: Problem }) {
+function ProblemView({ p }: { p: FullProblem }) {
   const toast = useToast();
   const ud = useUserData();
   const contest = useContest();
   const { solved, stars, subs: allSubs, notes } = ud.data;
-  const idx = PROBLEMS.indexOf(p);
+  const idx = PROBLEMS.findIndex((x) => x.id === p.id);
   const prev = PROBLEMS[idx - 1];
   const next = PROBLEMS[idx + 1];
   const locked = contest.locked(p.id);
@@ -325,5 +325,56 @@ export function ProblemPage({ p }: { p: Problem }) {
         </section>
       </div>
     </>
+  );
+}
+
+/** Opens fast: the list data is already here, the statement and tests arrive as one small file. */
+export function ProblemPage({ p }: { p: Problem }) {
+  const [full, setFull] = useState<FullProblem | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let live = true;
+    setFull(null);
+    setFailed(false);
+    loadFull(p).then(
+      (f) => live && setFull(f),
+      () => live && setFailed(true),
+    );
+    return () => {
+      live = false;
+    };
+  }, [p, attempt]);
+  useEffect(() => {
+    document.title = `${p.title} · ${BRAND}`;
+  }, [p.title]);
+
+  if (full) return <ProblemView p={full} />;
+  return (
+    <div className="pv-loading" role="status" aria-live="polite">
+      <Link className="back" to={{ name: 'problems' }}>
+        &larr; All problems
+      </Link>
+      <h1>{p.title}</h1>
+      <span className="pv-tags">
+        <Pill diff={p.diff} />
+        <span className="chip">{p.topic}</span>
+      </span>
+      {failed ? (
+        <p className="note">
+          This problem could not be loaded. Check your connection and{' '}
+          <button className="btn sm" onClick={() => setAttempt((n) => n + 1)}>
+            try again
+          </button>
+          .
+        </p>
+      ) : (
+        <div className="skeleton" aria-label="Loading the problem">
+          <i />
+          <i />
+          <i />
+        </div>
+      )}
+    </div>
   );
 }

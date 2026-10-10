@@ -1,4 +1,6 @@
-/* Study plans: hand-ordered paths through the problem bank. Ids are checked against the data by the unit tests. */
+/* Study plans: hand-ordered paths through the problem bank, plus one generated from the problems marked "Must know".
+   Ids are checked against the data by the unit tests. */
+import { PROBLEMS } from './index';
 
 export interface PlanSection {
   title: string;
@@ -15,12 +17,12 @@ export interface Plan {
   sections: PlanSection[];
 }
 
-export const PLANS: Plan[] = [
+const HAND: Plan[] = [
   {
     id: 'foundations',
     title: 'Foundations',
     level: 'Beginner',
-    blurb: 'Every Easy problem, ordered so each one teaches a tool the next one uses. Start here if arrays and loops are all you know.',
+    blurb: 'The easiest classics, ordered so each one teaches a tool the next one uses. Start here if arrays and loops are all you know.',
     sections: [
       { title: 'Arrays and hash maps', note: 'Remember what you have seen instead of searching for it again.', ids: ['contains-duplicate', 'valid-anagram', 'two-sum', 'majority-element', 'plus-one', 'find-the-town-judge'] },
       { title: 'Pointers and strings', note: 'Walk an array from both ends, or with two indexes at different speeds.', ids: ['valid-palindrome', 'is-subsequence', 'best-time-to-buy-and-sell-stock', 'move-zeroes', 'remove-duplicates-from-sorted-array'] },
@@ -197,6 +199,54 @@ export const PLANS: Plan[] = [
     ],
   },
 ];
+
+const NOTES: Record<string, string> = {
+  'Arrays & Hashing': 'Look things up instead of rescanning.',
+  Strings: 'Count characters and scan once.',
+  'Two Pointers': 'Move two indexes towards the answer.',
+  'Sliding Window': 'Grow on the right, shrink on the left.',
+  'Prefix Sums': 'Precompute running totals.',
+  Stack: 'Keep the candidates that are still open.',
+  'Binary Search': 'Halve the search space, on the index or on the answer.',
+  Sorting: 'Sort first, then the problem gets easy.',
+  'Linked List': 'Rewire the next pointers carefully.',
+  Trees: 'Recurse on both children and combine.',
+  'Binary Search Trees': 'Use the ordering of the tree.',
+  Heap: 'Always take the smallest or largest of what is left.',
+  Intervals: 'Sort by start, then sweep once.',
+  Greedy: 'Take the best local choice and know why it is safe.',
+  Backtracking: 'Choose, explore, undo.',
+  Graphs: 'Pick BFS, DFS or Dijkstra from the shape of the question.',
+  'Union Find': 'Merge groups instead of walking the graph.',
+  'Dynamic Programming': 'Define the state, then the recurrence.',
+  Math: 'Digits, overflow and counting tricks.',
+  'Number Theory': 'Primes, gcd and modular arithmetic.',
+  'Bit Manipulation': 'A few tricks that replace a loop.',
+  Matrix: 'Walk and rewrite a grid.',
+};
+
+/** Every "Must know" problem in roadmap order. This is the shortest path to interview shape. */
+function interviewPlan(): Plan {
+  const sections: PlanSection[] = [];
+  for (const p of PROBLEMS) {
+    if (p.tier !== 'must') continue;
+    let sec = sections[sections.length - 1];
+    if (!sec || sec.title !== p.topic) {
+      sec = { title: p.topic, note: NOTES[p.topic] ?? 'The classics of this topic.', ids: [] };
+      sections.push(sec);
+    }
+    sec.ids.push(p.id);
+  }
+  return {
+    id: 'interview-must-do',
+    title: 'Interview Must-Do',
+    level: 'Intermediate',
+    blurb: 'The classics interviewers ask again and again, topic by topic in roadmap order, easy to hard. Finish this list before anything else if an interview is coming up.',
+    sections,
+  };
+}
+
+export const PLANS: Plan[] = [interviewPlan(), ...HAND];
 
 export const PLAN_BY_ID: ReadonlyMap<string, Plan> = new Map(PLANS.map((p) => [p.id, p]));
 

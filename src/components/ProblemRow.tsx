@@ -11,6 +11,11 @@ export function ProblemRow({ p, number, done, starred }: { p: Problem; number?: 
         <b>
           {number !== undefined ? `${number}. ` : ''}
           {p.title}
+          {p.tier === 'must' && (
+            <span className="tier-chip" title="A classic that interviewers ask again and again">
+              Must know
+            </span>
+          )}
           {starred && (
             <span className="star-mark" title="Starred" aria-label="Starred">
               {' '}

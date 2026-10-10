@@ -1,9 +1,9 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BRAND, CLOUD_ENABLED } from '../config';
 import { Heatmap } from '../components/Heatmap';
 import { TodayPanel } from '../components/landing/TodayPanel';
 import { Link, Pill, Rich, SectionLink } from '../components/common';
-import { BY_ID, PROBLEMS, TOPICS } from '../data';
+import { BY_ID, PROBLEMS, TOPICS, loadDetail } from '../data';
 import { PLANS, planIds } from '../data/plans';
 import { navigate, takePendingSection } from '../router';
 import { useFilters } from '../state/filters';
@@ -12,7 +12,6 @@ import { CONTEST_MINUTES, POINTS, clock, pickProblems } from '../user/contest';
 import { activityByDay, dayKey, planProgress, streaks } from '../user/stats';
 
 
-const ORDER = { Easy: 0, Medium: 1, Hard: 2 } as const;
 
 export function Landing() {
   const { setFilters } = useFilters();
@@ -23,11 +22,11 @@ export function Landing() {
   const st = streaks(activity, dayKey(now));
   const started = st.activeDays > 0;
   const contestIds = useMemo(() => pickProblems(PROBLEMS, {}, 2024), []);
-  const hint = BY_ID.get('two-sum')?.hints[0] ?? '';
-  const byTopic = useMemo(
-    () => TOPICS.map((t) => ({ topic: t, list: PROBLEMS.filter((p) => p.topic === t).sort((a, b) => ORDER[a.diff] - ORDER[b.diff]) })).sort((a, b) => b.list.length - a.list.length),
-    [],
-  );
+  const [hint, setHint] = useState('');
+  useEffect(() => {
+    loadDetail('two-sum').then((d) => setHint(d.hints[0] ?? ''), () => undefined);
+  }, []);
+  const byTopic = useMemo(() => TOPICS.map((t) => ({ topic: t, list: PROBLEMS.filter((p) => p.topic === t) })), []);
 
   useEffect(() => {
     const id = takePendingSection();
@@ -64,13 +63,14 @@ export function Landing() {
 
       <div className="lp-wrap">
         <section className="lp-sec" id="topics" aria-labelledby="h-topics">
-          <h2 id="h-topics">Pick a topic</h2>
+          <h2 id="h-topics">Follow the roadmap</h2>
           <p className="sec-lede">
-            Every square is one problem, coloured by level: green is Easy, amber is Medium, red is Hard. Squares fill in as you solve them.
+            {TOPICS.length} topics in the order they build on each other, each from easy to hard. The bar shows Easy, Medium and Hard problems and fills in as you solve them.
           </p>
           <div className="lp-topics">
-            {byTopic.map(({ topic, list }) => {
+            {byTopic.map(({ topic, list }, i) => {
               const done = list.filter((p) => data.solved[p.id]).length;
+              const must = list.filter((p) => p.tier === 'must').length;
               return (
                 <a
                   key={topic}
@@ -82,14 +82,25 @@ export function Landing() {
                   }}
                   aria-label={`${topic}: ${list.length} ${list.length === 1 ? 'problem' : 'problems'}, ${done} solved`}
                 >
+                  <span className="lp-step tnum" aria-hidden="true">
+                    {i + 1}
+                  </span>
                   <b>{topic}</b>
-                  <span className="lp-sq" aria-hidden="true">
-                    {list.map((p) => (
-                      <i key={p.id} className={`${p.diff}${data.solved[p.id] ? ' done' : ''}`} />
-                    ))}
+                  <span className="lp-seg" aria-hidden="true">
+                    {(['Easy', 'Medium', 'Hard'] as const).map((d) => {
+                      const all = list.filter((p) => p.diff === d);
+                      if (!all.length) return null;
+                      const n = all.filter((p) => data.solved[p.id]).length;
+                      return (
+                        <i key={d} className={d} style={{ flexGrow: all.length }}>
+                          <u style={{ width: `${(100 * n) / all.length}%` }} />
+                        </i>
+                      );
+                    })}
                   </span>
                   <small className="tnum">
                     {done > 0 ? `${done} of ${list.length} solved` : `${list.length} ${list.length === 1 ? 'problem' : 'problems'}`}
+                    {must > 0 && <> &middot; {must} must know</>}
                   </small>
                 </a>
               );

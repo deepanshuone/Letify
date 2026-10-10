@@ -10,16 +10,28 @@ export interface TestCase {
   expected: Value;
 }
 
+export type Tier = 'must' | 'common' | 'extra';
+
+/** What every list needs: small, bundled with the app. */
 export interface Problem {
   id: string;
   title: string;
   diff: Diff;
   topic: string;
+  /** Interview importance: must = asked again and again, common = regular pattern, extra = good practice. */
+  tier: Tier;
   fn: string;
   params: [string, PType][];
   ret: PType;
   cmp: Cmp;
-  /** Trusted HTML from data/problems.py (the build only allows plain formatting tags). */
+  /** Number of cases Run uses (the first `visible` cases). */
+  visible: number;
+  testCount: number;
+}
+
+/** Loaded on demand when a problem is opened. */
+export interface ProblemDetail {
+  /** Trusted HTML from data/bank (the build only allows plain formatting tags). */
   desc: string;
   constraints: string[];
   hints: string[];
@@ -28,11 +40,10 @@ export interface Problem {
   space: string;
   /** Reference solution, Python. */
   solution: string;
-  /** Number of cases Run uses (the first `visible` cases). */
-  visible: number;
-  testCount: number;
   samples: TestCase[];
 }
+
+export type FullProblem = Problem & ProblemDetail;
 
 /** What an engine reports for one test case. */
 export interface CaseResult {
