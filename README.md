@@ -1,6 +1,6 @@
 # AlgoAdda: free DSA practice
 
-A free LeetCode-style practice site for data structures and algorithms. 315 problems in three stages (81 Easy, 170 Medium, 64 Hard), each with a statement, hidden tests, three hints, an editorial with Big-O and a reference solution. Everything is unlocked. Languages: Python, JavaScript, C++ and Java.
+A free LeetCode-style practice site for data structures and algorithms. 1,177 problems arranged as a learning roadmap, topic by topic and easy to hard (289 Easy, 634 Medium, 254 Hard), with 156 interview "Must know" classics flagged, each with a statement, hidden tests, three hints, an editorial with Big-O and a reference solution. Everything is unlocked. Languages: Python, JavaScript, C++ and Java.
 
 **Features** (ideas taken from LeetCode, HackerRank and CodeChef; all problem statements are original)
 

@@ -697,6 +697,22 @@ def b_avoid(pattern, n, k):
     # independent method: count over the last (m-1) characters kept as plain strings
     m = len(pattern)
     letters = [chr(97 + c) for c in range(k)]
+    if k ** max(m - 1, 0) > 4000:
+        # large cases: states are the longest suffix that is a pattern prefix, found by direct comparison
+        dp = {0: 1}
+        for _ in range(n):
+            nd = {}
+            for j, v in dp.items():
+                for ch in letters:
+                    w = pattern[:j] + ch
+                    if w.endswith(pattern):
+                        continue
+                    t = len(w)
+                    while t and not (w.endswith(pattern[:t]) and t <= m):
+                        t -= 1
+                    nd[t] = (nd.get(t, 0) + v) % MOD
+            dp = nd
+        return sum(dp.values()) % MOD
     cur = {"": 1}
     for _ in range(n):
         nxt = {}
