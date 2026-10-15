@@ -49,5 +49,5 @@ TIER = {pid: "must" for pid in MUST}
 # Near-duplicates of an earlier problem; the build skips them (the earlier one stays).
 EXCLUDE = set("""
 duplicate-zeros-shift-right wildcard-pattern-match smallest-range-covering-k-lists tree-surveillance-cameras
-partition-around-pivot-keep-order rank-among-distinct-rearrangements minimum-replacements-to-anagram
+partition-around-pivot-keep-order rank-among-distinct-rearrangements minimum-replacements-to-anagram dup-stock-single-trade
 """.split())

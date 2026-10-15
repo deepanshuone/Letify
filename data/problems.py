@@ -1003,3 +1003,5 @@ from bank import (arr_a, arr_b, arr_c, arr_d, arr_e, arr_f, arr_g, arr_h, arr_i,
 from bank import (sw_d, sw_e, sw_f, ps_a, ps_b, ps_c, ps_d, st_a, st_b, st_c, st_d, st_e, st_f, bs_a, bs_b, bs_c, bs_d, bs_e, bs_f, bs_g)  # noqa: E402,F401  (wave 2)
 from bank import (so_a, so_b, so_c, so_d, str_a, str_b, str_c, str_d, str_e, str_f, str_g, str_h, str_i, str_j, sa_a, sa_b, sa_c, ll_a, ll_c)  # noqa: E402,F401  (wave 3)
 from bank import (ll_b, ll_d, tr_a, tr_b, tr_c, tr_d, tr_e, tr_f, tr_g, tr_h, bst_a, bst_b, bst_c, hp_a, hp_b, hp_c, hp_d, hp_e, iv_a, iv_b)  # noqa: E402,F401  (wave 4)
+from bank import (iv_c, iv_d, gr_a, gr_b, gr_c, gr_d, gr_e, gr_f, bt_a, bt_b, bt_c, bt_d, bt_e, bt_f, g_a, g_b, g_c, g_d, g_e, g_f)  # noqa: E402,F401  (wave 5)
+from bank import (g_g, g_h, g_i, g_j, g_k, uf_a, uf_b, uf_c, dp_a, dp_b, dp_c, dp_d, dp_e, dp_f, dp_g, dp_h, dp_i, dp_j, dp_k, dp_l)  # noqa: E402,F401  (wave 6)
