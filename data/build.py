@@ -195,6 +195,7 @@ def main(only=None, write=True):
     else:
         import problems as pb  # registers every problem
         plist = list(pb.P)
+    plist = [p for p in plist if p["id"] not in curated.EXCLUDE]
     ids = set()
     for p in plist:
         assert p["id"] not in ids, ("duplicate id", p["id"])

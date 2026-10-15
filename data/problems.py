@@ -999,3 +999,7 @@ KNOWN_QUEENS = {1: 1, 2: 0, 3: 0, 4: 2, 5: 10, 6: 4, 7: 40, 8: 92, 9: 352}
 # Larger problem sets live in data/bank/. Importing a module registers its problems.
 from bank import arrays, dp, graphs, strings, patterns, classics, depth  # noqa: E402,F401
 from bank import (hashing2, arrays3, windows2, bsearch2, stacks2, strings2, strings3, dp1d, dpgrid, dpknap, dpseq, gridgraph, graphpaths, trees1, trees2, lists1, backtrack2, greedy2, heap2, math2, bitsmatrix)  # noqa: E402,F401
+from bank import (arr_a, arr_b, arr_c, arr_d, arr_e, arr_f, arr_g, arr_h, arr_i, arr_j, arr_k, tp_a, tp_b, tp_c, tp_d, tp_e, tp_f, sw_a, sw_b, sw_c)  # noqa: E402,F401  (wave 1)
+from bank import (sw_d, sw_e, sw_f, ps_a, ps_b, ps_c, ps_d, st_a, st_b, st_c, st_d, st_e, st_f, bs_a, bs_b, bs_c, bs_d, bs_e, bs_f, bs_g)  # noqa: E402,F401  (wave 2)
+from bank import (so_a, so_b, so_c, so_d, str_a, str_b, str_c, str_d, str_e, str_f, str_g, str_h, str_i, str_j, sa_a, sa_b, sa_c, ll_a, ll_c)  # noqa: E402,F401  (wave 3)
+from bank import (ll_b, ll_d, tr_a, tr_b, tr_c, tr_d, tr_e, tr_f, tr_g, tr_h, bst_a, bst_b, bst_c, hp_a, hp_b, hp_c, hp_d, hp_e, iv_a, iv_b)  # noqa: E402,F401  (wave 4)

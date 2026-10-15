@@ -45,3 +45,9 @@ counting-bits-array longest-valid-parentheses sort-three-colors-in-place next-pe
 alien-dictionary-integer-order minimum-cost-for-tickets
 """.split()
 TIER = {pid: "must" for pid in MUST}
+
+# Near-duplicates of an earlier problem; the build skips them (the earlier one stays).
+EXCLUDE = set("""
+duplicate-zeros-shift-right wildcard-pattern-match smallest-range-covering-k-lists tree-surveillance-cameras
+partition-around-pivot-keep-order rank-among-distinct-rearrangements minimum-replacements-to-anagram
+""".split())
