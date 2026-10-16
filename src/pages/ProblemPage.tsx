@@ -16,6 +16,8 @@ import { ensurePython, runEngine } from '../engines';
 import { useContest } from '../state/contest';
 import { useToast } from '../state/toast';
 import { useUserData } from '../state/userdata';
+import { useCloud } from '../state/cloud';
+import { useAuthDialog } from '../state/authdialog';
 import type { FullProblem, Lang, Problem, Value } from '../types';
 import { PENALTY_MINUTES, clock } from '../user/contest';
 
@@ -65,6 +67,8 @@ function ContestBanner({ pid }: { pid: string }) {
 function ProblemView({ p }: { p: FullProblem }) {
   const toast = useToast();
   const ud = useUserData();
+  const cloud = useCloud();
+  const auth = useAuthDialog();
   const contest = useContest();
   const { solved, stars, subs: allSubs, notes } = ud.data;
   const idx = PROBLEMS.findIndex((x) => x.id === p.id);
@@ -154,6 +158,12 @@ function ProblemView({ p }: { p: FullProblem }) {
   const execute = useCallback(
     async (mode: 'run' | 'submit') => {
       if (busy) return;
+      // With accounts switched on, a submission is only kept for a signed-in learner. Run works without an account.
+      if (mode === 'submit' && cloud.enabled && !cloud.user) {
+        toast('Sign in to submit. You can still run your code without an account.');
+        auth.open();
+        return;
+      }
       const { code: src, lang: l } = latest.current;
       setBusy(true);
       setBottom('results');
@@ -189,7 +199,7 @@ function ProblemView({ p }: { p: FullProblem }) {
       setRun({ kind: 'done', id: ++runId.current, verdict, tests, mode, lang: l });
       setBusy(false);
     },
-    [busy, p, toast],
+    [busy, p, toast, cloud.enabled, cloud.user, auth],
   );
 
   const customRun = useCallback(

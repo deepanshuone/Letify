@@ -20,7 +20,9 @@ const dayNumber = (key: string) => Math.round(Date.parse(key + 'T00:00:00Z') / D
 /** Number of submissions per day. */
 export function activityByDay(data: UserData, offsetMin?: number): Record<string, number> {
   const out: Record<string, number> = {};
+  // Only accepted submissions count: a wrong answer does not keep the streak alive.
   for (const s of data.subs) {
+    if (s.verdict !== 'ac') continue;
     const k = dayKey(s.at, offsetMin);
     out[k] = (out[k] ?? 0) + 1;
   }

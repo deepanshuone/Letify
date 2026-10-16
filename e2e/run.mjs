@@ -550,11 +550,17 @@ await scenario('accounts: sign in, progress syncs, second device gets it', async
   await other.close();
 }, { cloud: true, allowConsole: /Failed to load resource/ });
 
-await scenario('accounts: a down server never blocks practice', async (page) => {
+await scenario('accounts: a down server never blocks running code', async (page) => {
   await page.route(FAKE_SUPABASE + '/**', (r) => r.abort());
   await open(page, '/problem/two-sum');
-  expectEq(await submitJs(page, 'two-sum', JS_TWO_SUM), 'Accepted', 'works offline from the cloud');
-  await page.waitForSelector('.pv-tags .solved-badge');
+  await pickLang(page, 'JavaScript');
+  await setCode(page, JS_TWO_SUM);
+  await page.click('button:has-text("Run")');
+  expectEq(await verdict(page), 'Accepted', 'run works while the account server is down');
+  // without a signed-in account a submission is not kept, so the learner is asked to sign in
+  await page.click('button:has-text("Submit")');
+  await page.waitForSelector('dialog');
+  await page.keyboard.press('Escape');
 }, { cloud: true, allowConsole: /ERR_FAILED|Failed to load resource|Failed to fetch/ });
 
 await scenario('every problem page opens and has starter code', async (page) => {
