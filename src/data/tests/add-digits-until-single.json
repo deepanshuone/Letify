@@ -1,0 +1,1 @@
+[{"args":[0],"expected":0},{"args":[1],"expected":1},{"args":[9],"expected":9},{"args":[10],"expected":1},{"args":[38],"expected":2},{"args":[99],"expected":9},{"args":[100],"expected":1},{"args":[1000],"expected":1},{"args":[123456789],"expected":9},{"args":[493193],"expected":2},{"args":[999999999],"expected":9},{"args":[2147483647],"expected":1}]

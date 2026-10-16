@@ -1005,3 +1005,5 @@ from bank import (so_a, so_b, so_c, so_d, str_a, str_b, str_c, str_d, str_e, str
 from bank import (ll_b, ll_d, tr_a, tr_b, tr_c, tr_d, tr_e, tr_f, tr_g, tr_h, bst_a, bst_b, bst_c, hp_a, hp_b, hp_c, hp_d, hp_e, iv_a, iv_b)  # noqa: E402,F401  (wave 4)
 from bank import (iv_c, iv_d, gr_a, gr_b, gr_c, gr_d, gr_e, gr_f, bt_a, bt_b, bt_c, bt_d, bt_e, bt_f, g_a, g_b, g_c, g_d, g_e, g_f)  # noqa: E402,F401  (wave 5)
 from bank import (g_g, g_h, g_i, g_j, g_k, uf_a, uf_b, uf_c, dp_a, dp_b, dp_c, dp_d, dp_e, dp_f, dp_g, dp_h, dp_i, dp_j, dp_k, dp_l)  # noqa: E402,F401  (wave 6)
+from bank import (m_a, m_b, m_c, m_d, m_e)  # noqa: E402,F401  (math wave)
+from bank import (m_f, m_g, m_h, m_i, m_j)  # noqa: E402,F401  (math wave 2)

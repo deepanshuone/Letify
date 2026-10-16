@@ -1,0 +1,1 @@
+[{"args":[1],"expected":1},{"args":[2],"expected":3},{"args":[3],"expected":7},{"args":[4],"expected":11},{"args":[10],"expected":63},{"args":[100],"expected":6087},{"args":[300],"expected":54795},{"args":[12345],"expected":92652795},{"args":[29999],"expected":547127547},{"args":[30000],"expected":547143547}]
