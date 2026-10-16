@@ -19,6 +19,7 @@ from pathlib import Path
 
 import lib
 import curated
+from gens_base import GENS as BASE_GENS
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
@@ -27,6 +28,7 @@ TESTS = OUT / "tests"
 DETAILS = OUT / "details"
 TEST_CAP = 200_000  # bytes of JSON per problem; the largest cases are dropped beyond this
 VISIBLE = 3  # sample cases shown by Run and in the statement
+TOPUP_TARGET = int(os.environ.get("LETIFY_TESTS", "60"))  # total cases per problem; extra random ones come from the brute-force generator
 INT_MIN, INT_MAX = -(2 ** 31), 2 ** 31 - 1
 
 
@@ -149,6 +151,26 @@ def process(i):
                 b = brute(*copy.deepcopy(t["args"]))
                 assert canon(t["expected"], mode) == canon(b, mode), (p["id"], t["args"])
         note = "400 random brute checks"
+
+    # --- top up with more random cases from the same generator (expected values come from the reference, which was just brute-checked)
+    gen = lib.CHECKS[p["id"]][1] if p["id"] in lib.CHECKS else BASE_GENS.get(p["id"])
+    if gen is not None and len(tests) < TOPUP_TARGET:
+        seen = {json.dumps(t["args"], sort_keys=True) for t in tests}
+        r = random.Random(4321)
+        tries = 0
+        while len(tests) < TOPUP_TARGET and tries < TOPUP_TARGET * 20:
+            tries += 1
+            args = gen(r)
+            key = json.dumps(args, sort_keys=True)
+            if key in seen:
+                continue
+            seen.add(key)
+            if any(not (INT_MIN <= v <= INT_MAX) for v in walk_ints(args)):
+                continue
+            expected = ref(*copy.deepcopy(args))
+            if any(not (INT_MIN <= v <= INT_MAX) for v in walk_ints(expected)):
+                continue
+            tests.append({"args": args, "expected": expected})
 
     # --- keep the test file small enough to download quickly on a phone
     dropped = 0
