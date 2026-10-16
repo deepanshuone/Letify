@@ -121,7 +121,7 @@ _pat = _rs(_r, 3000)
 _vocab = set()
 while len(_vocab) < 26:
     _vocab.add(_rs(_r, _r.randint(3, 6)))
-_vocab = list(_vocab)
+_vocab = sorted(_vocab)
 _mp = dict(zip(LET, _vocab))
 _w = [_mp[c] for c in _pat]
 p["tests"].append([_pat, ",".join(_w)])

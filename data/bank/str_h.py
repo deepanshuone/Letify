@@ -281,7 +281,7 @@ def _chain_words(r, n, chain_len):
         ws.add(cur)
     while len(ws) < n:
         ws.add(_rs(r, r.randint(1, 16), "abc"))
-    ws = list(ws)
+    ws = sorted(ws)
     r.shuffle(ws)
     return ws
 
@@ -888,7 +888,7 @@ p["tests"].append([",".join(sorted({_rs(_r, _r.randint(1, 12), "ab") for _ in ra
 _ws = set()
 while len(_ws) < 1000:
     _ws.add(_rs(_r, _r.randint(2, 12), "abc"))
-_ws = list(_ws)
+_ws = sorted(_ws)
 _r.shuffle(_ws)
 p["tests"].append([",".join(_ws)])
 _ws = set()
@@ -896,7 +896,7 @@ while len(_ws) < 500:
     _x = _rs(_r, _r.randint(1, 6), "abc")
     _ws.add(_x)
     _ws.add(_x[::-1] + _rs(_r, _r.randint(0, 3), "aa"))
-_ws = list(_ws)[:1000]
+_ws = sorted(_ws)[:1000]
 _r.shuffle(_ws)
 p["tests"].append([",".join(_ws)])
 
