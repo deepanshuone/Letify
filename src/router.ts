@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { BY_ID } from './data';
 import { PLAN_BY_ID } from './data/plans';
+import { COMPANY_LISTS } from './data/companies';
 
 export type Route =
   | { name: 'landing' }
@@ -9,6 +10,7 @@ export type Route =
   | { name: 'plans' }
   | { name: 'plan'; id: string }
   | { name: 'companies' }
+  | { name: 'company'; id: string }
   | { name: 'profile' }
   | { name: 'contest' };
 
@@ -18,6 +20,11 @@ export function parseHash(hash: string): Route {
   if (h === 'problems') return { name: 'problems' };
   if (h === 'plans') return { name: 'plans' };
   if (h === 'companies') return { name: 'companies' };
+  const co = /^companies\/(.+)$/.exec(h);
+  if (co) {
+    const id = decodeURIComponent(co[1]!);
+    return COMPANY_LISTS.some((c) => c.name === id) ? { name: 'company', id } : { name: 'companies' };
+  }
   if (h === 'profile') return { name: 'profile' };
   if (h === 'contest') return { name: 'contest' };
   const plan = /^plan\/(.+)$/.exec(h);
@@ -43,6 +50,8 @@ export function hrefFor(r: Route): string {
       return `#/problem/${encodeURIComponent(r.id)}`;
     case 'plan':
       return `#/plan/${encodeURIComponent(r.id)}`;
+    case 'company':
+      return `#/companies/${encodeURIComponent(r.id)}`;
     default:
       return '#/';
   }

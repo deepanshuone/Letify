@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { BY_ID } from './data';
 import { ContestPage } from './pages/Contest';
 import { Landing } from './pages/Landing';
-import { Companies } from './pages/Companies';
+import { Companies, CompanyPage } from './pages/Companies';
 import { Plans, PlanDetail } from './pages/Plans';
 import { ProblemPage } from './pages/ProblemPage';
 import { Problems } from './pages/Problems';
@@ -68,6 +68,7 @@ function Page() {
   if (route.name === 'problems') return <Problems />;
   if (route.name === 'plans') return <Plans />;
   if (route.name === 'companies') return <Companies />;
+  if (route.name === 'company') return <CompanyPage id={route.id} />;
   if (route.name === 'plan') return <PlanDetail id={route.id} />;
   if (route.name === 'profile') return <Profile />;
   if (route.name === 'contest') return <ContestPage />;

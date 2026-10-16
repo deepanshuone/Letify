@@ -582,3 +582,7 @@ main.full{padding:0}
 .co-check{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line);flex:none}
 .co-check.on{background:var(--accent);border-color:var(--accent)}
 @media (max-width:520px){.co-grid{grid-template-columns:1fr}}
+.co-head h2 a{color:inherit;text-decoration:none}
+.co-head h2 a:hover{text-decoration:underline}
+.co-all{font-size:.9rem;color:var(--accent);text-decoration:none;justify-self:start}
+.co-all:hover{text-decoration:underline}
