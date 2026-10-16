@@ -118,5 +118,10 @@ export class SyncEngine {
 export function friendly(err: unknown): string {
   const m = String((err as { message?: string })?.message ?? err);
   if (/failed to fetch|networkerror|load failed/i.test(m)) return 'Could not reach the server. Your progress is safe in this browser and will sync later.';
+  if (/invalid login credentials/i.test(m)) return 'Email or password is wrong. If you just created the account, confirm your email first (check spam).';
+  if (/email not confirmed/i.test(m)) return 'Confirm your email first: open the link we sent you, then sign in.';
+  if (/user already registered|already been registered/i.test(m)) return 'This email already has an account. Sign in instead.';
+  if (/password should be at least/i.test(m)) return 'Password must be at least 8 characters.';
+  if (/rate limit|too many/i.test(m)) return 'Too many attempts. Wait a few minutes and try again.';
   return m.slice(0, 200);
 }

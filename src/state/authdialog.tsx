@@ -50,7 +50,12 @@ function AuthDialog({ onClose }: { onClose(): void }) {
       if (mode === 'signin') await cloud.signIn(email.trim(), password);
       else if (mode === 'signup') {
         const r = await cloud.signUp(email.trim(), password);
-        if (r.needsConfirm) setInfo('Account created. Open the email we sent you and confirm your address, then sign in.');
+        if (r.needsConfirm) {
+          // Keep the email, clear the password, and move to sign-in so the next step is obvious.
+          setMode('signin');
+          setPassword('');
+          setInfo('Account created. We sent a confirmation link to ' + email.trim() + '. Open it, then sign in here.');
+        }
       } else {
         await cloud.magicLink(email.trim());
         setInfo('Check your inbox: we sent a sign-in link to ' + email.trim() + '.');
