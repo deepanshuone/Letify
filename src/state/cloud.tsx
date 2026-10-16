@@ -13,8 +13,11 @@ export interface CloudApi {
   signUp(email: string, password: string): Promise<{ needsConfirm: boolean }>;
   magicLink(email: string): Promise<void>;
   oauth(provider: string): Promise<void>;
-  signOut(opts?: { clearLocal?: boolean }): Promise<void>;
+  /** Signs out and removes this browser's progress (the account keeps it). */
+  signOut(): Promise<void>;
   syncNow(): Promise<void>;
+  /** True when some progress is not in the cloud yet. */
+  hasUnsaved(): boolean;
 }
 
 const off: CloudApi = {
@@ -28,6 +31,7 @@ const off: CloudApi = {
   oauth: async () => {},
   signOut: async () => {},
   syncNow: async () => {},
+  hasUnsaved: () => false,
 };
 
 const Ctx = createContext<CloudApi>(off);
@@ -119,14 +123,16 @@ export function CloudProvider({ children, backendFactory }: { children: ReactNod
       signUp: (email, pw) => need().signUpPassword(email, pw),
       magicLink: (email) => need().sendMagicLink(email),
       oauth: (p) => need().signInOAuth(p),
-      async signOut(opts) {
+      async signOut() {
         await engine.current?.sync(); // last upload, so nothing is lost
         await need().signOut();
         setUser(null);
         setStatus({ state: 'idle' });
-        if (opts?.clearLocal) udRef.current.clearAll();
+        // The next person on this browser must start from their own account, not from this one.
+        udRef.current.clearAll();
       },
       syncNow: async () => void (await engine.current?.sync()),
+      hasUnsaved: () => !!engine.current?.hasUnsaved,
     };
   }, [enabled, ready, user, status, need]);
 

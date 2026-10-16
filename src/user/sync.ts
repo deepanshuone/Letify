@@ -46,6 +46,8 @@ export class SyncEngine {
   private running: Promise<void> | null = null;
   private again = false;
   private stopped = false;
+  private dirty = false; // local changes not yet confirmed by the cloud
+  private failed = false; // the last pass could not reach the cloud
 
   constructor(
     private backend: CloudBackend,
@@ -76,8 +78,14 @@ export class SyncEngine {
   /** Save soon: many quick changes become one request. */
   schedulePush(): void {
     if (this.stopped) return;
+    this.dirty = true;
     clearTimeout(this.timer);
     this.timer = setTimeout(() => void this.sync(), this.delayMs);
+  }
+
+  /** True while some local change has not been confirmed by the cloud yet. */
+  get hasUnsaved(): boolean {
+    return this.dirty || this.failed;
   }
 
   stop(): void {
@@ -98,11 +106,15 @@ export class SyncEngine {
         const merged = merge(this.hooks.local(), theirs);
         if (!sameData(merged, this.hooks.local())) this.hooks.apply(merged);
         if (sameData(merged, theirs)) {
+          this.dirty = false;
+          this.failed = false;
           this.hooks.status({ state: 'synced', at: Date.now() });
           return;
         }
         const rev = await this.backend.updateDoc(merged, remote.rev);
         if (rev !== null) {
+          this.dirty = false;
+          this.failed = false;
           this.hooks.status({ state: 'synced', at: Date.now() });
           return;
         }
@@ -110,6 +122,7 @@ export class SyncEngine {
       }
       throw new Error('Could not save because another device kept changing the data. Try again.');
     } catch (err) {
+      this.failed = true;
       this.hooks.status({ state: 'error', message: friendly(err) });
     }
   }

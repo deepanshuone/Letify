@@ -157,3 +157,27 @@ describe('sync engine', () => {
     expect(s.doc.rev).toBe(4);
   });
 });
+
+describe('unsaved progress', () => {
+  it('is set by a local change and cleared once the cloud has it', async () => {
+    const server = new Server();
+    let local = emptyData();
+    const engine = new SyncEngine(server.backend(), { local: () => local, apply: (m) => (local = m), status: () => {} }, 0);
+    expect(engine.hasUnsaved).toBe(false);
+    local = { ...local, stars: { 'two-sum': { on: true, at: 1 } } };
+    engine.schedulePush();
+    expect(engine.hasUnsaved).toBe(true);
+    await engine.sync();
+    expect(engine.hasUnsaved).toBe(false);
+    engine.stop();
+  });
+
+  it('stays set while the cloud cannot be reached', async () => {
+    const server = new Server();
+    server.failNext = 5;
+    const engine = new SyncEngine(server.backend(), { local: () => emptyData(), apply: () => {}, status: () => {} }, 0);
+    await engine.sync();
+    expect(engine.hasUnsaved).toBe(true);
+    engine.stop();
+  });
+});

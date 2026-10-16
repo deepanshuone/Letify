@@ -63,11 +63,16 @@ function Account() {
           <button role="menuitem" onClick={() => void cloud.syncNow()}>
             Sync now
           </button>
-          <button role="menuitem" onClick={() => { setOpen(false); void cloud.signOut(); }}>
+          <button
+            role="menuitem"
+            className="danger"
+            onClick={() => {
+              if (cloud.hasUnsaved() && !confirm('Some progress is not saved to your account yet. Sign out and delete it from this browser?')) return;
+              setOpen(false);
+              void cloud.signOut();
+            }}
+          >
             Sign out
-          </button>
-          <button role="menuitem" className="danger" onClick={() => { if (confirm('Sign out and remove your progress from this browser? It stays in your account.')) { setOpen(false); void cloud.signOut({ clearLocal: true }); } }}>
-            Sign out and clear this browser
           </button>
         </div>
       )}

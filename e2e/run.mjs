@@ -543,7 +543,7 @@ await scenario('accounts: sign in, progress syncs, second device gets it', async
   // signing out leaves the progress in the account
   page.on('dialog', (d) => d.accept());
   if (!(await page.locator('.menu').count())) await page.click('button.avatar');
-  await page.click('button:has-text("Sign out and clear")');
+  await page.click('.menu button:has-text("Sign out")');
   await page.waitForSelector('header button:has-text("Sign in")');
   expectEq((await page.locator('.count').innerText()).trim(), `0 of ${problems.length} solved`, 'cleared in this browser');
   if (![...fake.rows.values()][0].data.solved['two-sum']) throw new Error('sign out must not delete cloud data');
