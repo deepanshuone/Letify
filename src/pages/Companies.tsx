@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BRAND } from '../config';
-import { Link, Pill } from '../components/common';
+import { Link } from '../components/common';
 import { ProblemRow } from '../components/ProblemRow';
 import { BY_ID } from '../data';
 import { COMPANY_LISTS, type CompanyList } from '../data/companies';
@@ -58,19 +58,8 @@ export function Companies() {
               <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={problems.length} aria-valuenow={done} aria-label={`${c.name} progress`}>
                 <i style={{ width: `${pct}%` }} />
               </div>
-              <ol className="co-list">
-                {problems.slice(0, 8).map((p) => (
-                  <li key={p.id}>
-                    <Link to={{ name: 'problem', id: p.id }} className="co-q">
-                      <span className={data.solved[p.id] ? 'co-check on' : 'co-check'} aria-label={data.solved[p.id] ? 'solved' : 'not solved'} />
-                      <span className="co-title">{p.title}</span>
-                      <Pill diff={p.diff} />
-                    </Link>
-                  </li>
-                ))}
-              </ol>
               <Link to={{ name: 'company', id: c.name }} className="co-all">
-                View all {problems.length} questions
+                Open {c.name} questions ({problems.length}) →
               </Link>
             </article>
           );
