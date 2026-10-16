@@ -8,6 +8,7 @@ export type Route =
   | { name: 'problem'; id: string }
   | { name: 'plans' }
   | { name: 'plan'; id: string }
+  | { name: 'companies' }
   | { name: 'profile' }
   | { name: 'contest' };
 
@@ -16,6 +17,7 @@ export function parseHash(hash: string): Route {
   const h = hash.replace(/^#\/?/, '').replace(/\/+$/, '');
   if (h === 'problems') return { name: 'problems' };
   if (h === 'plans') return { name: 'plans' };
+  if (h === 'companies') return { name: 'companies' };
   if (h === 'profile') return { name: 'profile' };
   if (h === 'contest') return { name: 'contest' };
   const plan = /^plan\/(.+)$/.exec(h);
@@ -33,6 +35,7 @@ export function hrefFor(r: Route): string {
   switch (r.name) {
     case 'problems':
     case 'plans':
+    case 'companies':
     case 'profile':
     case 'contest':
       return `#/${r.name}`;

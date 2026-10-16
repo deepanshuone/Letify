@@ -112,6 +112,9 @@ export function Header() {
           <Link to={{ name: 'plans' }} aria-current={cur('plans')}>
             Study plans
           </Link>
+          <Link to={{ name: 'companies' }} aria-current={cur('companies')}>
+            Companies
+          </Link>
           <Link to={{ name: 'contest' }} aria-current={cur('contest')}>
             Contest
           </Link>
