@@ -246,8 +246,47 @@ function interviewPlan(): Plan {
   };
 }
 
-export const PLANS: Plan[] = [interviewPlan(), ...HAND];
+/** Topics each hand-written plan draws its extra practice from (roadmap order, every problem not already listed). */
+const PLAN_TOPICS: Record<string, string[]> = {
+  foundations: ['Arrays & Hashing', 'Strings', 'Two Pointers', 'Math', 'Bit Manipulation', 'Stack'],
+  'interview-core': ['Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Binary Search', 'Dynamic Programming', 'Graphs', 'Backtracking', 'Trees', 'Intervals', 'Greedy', 'Stack', 'Heap'],
+  'windows-pointers': ['Two Pointers', 'Sliding Window', 'Prefix Sums', 'Strings', 'Arrays & Hashing'],
+  'dp-bootcamp': ['Dynamic Programming'],
+  'graphs-backtracking': ['Graphs', 'Backtracking', 'Matrix', 'Union Find'],
+  'strings-heaps-greedy': ['Strings', 'String Algorithms', 'Heap', 'Greedy'],
+  'patterns-round-two': ['Binary Search', 'Union Find', 'Intervals', 'Dynamic Programming', 'Sorting'],
+  'arrays-prefix-intervals': ['Arrays & Hashing', 'Prefix Sums', 'Intervals', 'Sorting'],
+  'pointers-windows-search': ['Two Pointers', 'Sliding Window', 'Binary Search'],
+  'stacks-and-strings': ['Stack', 'Strings', 'String Algorithms'],
+  'dp-lines-grids': ['Dynamic Programming', 'Matrix'],
+  'dp-knapsack-strings': ['Dynamic Programming', 'String Algorithms'],
+  'graphs-trees-lists': ['Graphs', 'Trees', 'Linked List', 'Binary Search Trees', 'Union Find'],
+  'search-greedy-heaps-math': ['Backtracking', 'Greedy', 'Heap', 'Math', 'Bit Manipulation', 'Matrix', 'Number Theory'],
+  'hard-mode': ['Dynamic Programming', 'Graphs', 'Trees', 'Heap', 'Sliding Window', 'Backtracking'],
+};
+
+/** Adds one section per topic with every remaining problem of that topic, so each plan is a full course, not a sample. */
+/** Plans that should stay focused: interview-core skips the optional "extra" problems, hard-mode keeps only Hard ones. */
+const PLAN_FILTER: Record<string, (p: (typeof PROBLEMS)[number]) => boolean> = {
+  'interview-core': (x) => x.tier !== 'extra',
+  'hard-mode': (x) => x.diff === 'Hard',
+};
+
+function withPractice(plan: Plan): Plan {
+  const have = new Set(plan.sections.flatMap((s) => s.ids));
+  const keep = PLAN_FILTER[plan.id] ?? (() => true);
+  const extra: PlanSection[] = [];
+  for (const topic of PLAN_TOPICS[plan.id] ?? []) {
+    const ids = PROBLEMS.filter((x) => x.topic === topic && !have.has(x.id) && keep(x)).map((x) => x.id);
+    if (ids.length === 0) continue;
+    ids.forEach((id) => have.add(id));
+    extra.push({ title: `More ${topic}`, note: NOTES[topic] ?? 'More practice on this topic.', ids });
+  }
+  return { ...plan, sections: [...plan.sections, ...extra] };
+}
+
+export const PLANS: Plan[] = [interviewPlan(), ...HAND.map(withPractice)];
 
 export const PLAN_BY_ID: ReadonlyMap<string, Plan> = new Map(PLANS.map((p) => [p.id, p]));
 
-export const planIds = (p: Plan): string[] => p.sections.flatMap((s) => s.ids);
+export const planIds = (p: Plan): string[] => [...new Set(p.sections.flatMap((s) => s.ids))];
