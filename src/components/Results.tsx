@@ -102,6 +102,11 @@ function Detail({ p, v, tests, mode, i }: { p: Problem; v: Exclude<Verdict, { ki
     return <p className="muted">Case {i + 1} is a hidden test case{v.kind === 'ac' || i < failIndex ? ' and your solution passed it.' : ' and was not run.'}</p>;
   }
   if (!failing && v.kind !== 'ac' && i > failIndex) return <p className="muted">Not run, because an earlier case failed.</p>;
+  if (failing && mode === 'submit' && i >= p.visible) {
+    // hidden cases: say what went wrong, but never reveal the input or the expected output
+    const what = v.kind === 'wa' ? 'Wrong answer' : v.kind === 're' ? 'Runtime error' : v.kind === 'tle' ? 'Time limit exceeded' : 'Failed';
+    return <p className="note">{what} on hidden case {i + 1}. Its input and expected output are not shown; check your logic on your own inputs and the edge cases in the constraints.</p>;
+  }
 
   const input = p.params.map((x, k) => `${x[0]} = ${fmtVal(t.args[k])}`).join('\n');
   return (
