@@ -415,6 +415,8 @@ main.full{padding:0}
 .lp-week-days li{display:grid;justify-items:center;gap:6px}
 .lp-week-days span{width:100%;max-width:44px;aspect-ratio:1;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
 .lp-week-days li.on span{background:var(--accent);border-color:var(--accent)}
+.lp-week-days li.on span{position:relative}
+.lp-week-days li.on span::after{content:"";position:absolute;left:50%;top:44%;width:28%;height:52%;border:solid #fff;border-width:0 3px 3px 0;transform:translate(-50%,-50%) rotate(45deg)}
 .lp-week-days li.today span{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent);border-color:var(--accent)}
 .lp-week-days small{font-size:.74rem;color:var(--ink-3)}
 .lp-levels{padding:16px 22px 22px;border-top:1px solid var(--line);display:grid;gap:12px}
